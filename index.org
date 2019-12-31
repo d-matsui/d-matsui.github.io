@@ -1,3 +1,5 @@
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="default.css" />
+
 * Daiki Matsui's Home Page
 ** Experience
 

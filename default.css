@@ -1,0 +1,58 @@
+body {
+    color: #ffffff;
+    background-color: #172727;
+    padding: 1em 1em 1.5em 1.5em;
+}
+
+h1, h2 {
+    color: #7fffd4;
+    background: #172727;
+    text-align: left;
+    border-bottom: #66cdaa 3px solid;
+    padding: 0.2em 0.2em 0.2em 0.2em;
+}
+
+h3, h4 {
+    color: #7fffd4;
+    background: #172727;
+    text-align: left;
+    border-bottom: #66cdaa 1px solid;
+    padding: 0.1em 0.1em 0.2em 0.2em;
+}
+
+pre {
+    background-color: #000000;
+    border-top: #66cdaa 1px solid;
+    border-left: #66cdaa 1px solid;
+    border-bottom: #66cdaa 1px solid;
+    border-right: #66cdaa 1px solid;
+    padding: 1em 1em 0.5em 0.5em;
+    margin-left: 2em;
+    margin-right: 2em;
+}
+
+a:link {
+    color: #7fffd4;
+    text-decoration: underline;
+}
+
+a:hover, a:active {
+    color: #7fffd4;
+    background-color: #000000;
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #7fffd4;
+    text-decoration: underline;
+}
+
+hr {
+    border-color: #66cdaa;
+    border-width: 1px 0px 1px 0px;
+    border-style: solid;
+}
+
+.fb_required {
+    font-weight: bold;
+}

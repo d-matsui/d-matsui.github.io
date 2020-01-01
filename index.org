@@ -1,11 +1,36 @@
+#+TITLE: Daiki Matsui's Home Page
+#+AUTHOR: Daiki Matsui
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="default.css" />
+#+OPTIONS: toc:nil
+#+OPTIONS: num:nil
 
-* Daiki Matsui's Home Page
-** Experience
+* About Me
 
-** Publications
+I received the Master's degree in the Information and Computer
+Sciences from Kwansei University, Hyogo, Japan, in 2019.  I'm a member
+of IEEE and IEICE.
 
-** Contact Information
+I'm currently a software enginner at NTT Communications in Japan
+from 2019.  I develop and maintain a WebRTC platform SkyWay which
+enables real-time communication on the web easily without setting up
+and operating servers normally required for WebRTC.
+
+My interests are ...
+- Modeling and analysis of communication networks
+- Programming (JavaScript, Python, Mathematica)
+- Gaming (League of Legends, FPS)
+
+* Publications
+** Research Papers
+
+- [[./papers/list-conference.html][List of Conference Papers]]
+- [[./papers/list-workshop.html][List of Workshop Papers]]
+
+** Master's Thesis
+
+- "Studies on Geographic DTN Routing with Random Mobile Agents" [[./papers/thesis.pdf][PDF]]
+
+* Contact Information
 
 - Gmail: mti.daiki[atmark]gmail.com
 - Twitter: https://twitter.com/mti_daiki

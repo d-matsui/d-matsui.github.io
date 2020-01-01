@@ -6,18 +6,19 @@
 
 * About Me
 
-I received the Master's degree in the Information and Computer
-Sciences from Kwansei University, Hyogo, Japan, in 2019.  I'm a member
-of IEEE and IEICE.
+I received the master's degree in the Information and Computer
+Sciences from Kwansei Gakuin University, Hyogo, Japan, in 2019.  I'm a
+member of IEEE and IEICE.
 
 I'm currently a software enginner at NTT Communications in Japan
 from 2019.  I develop and maintain a WebRTC platform SkyWay which
 enables real-time communication on the web easily without setting up
 and operating servers normally required for WebRTC.
 
-My interests are ...
+My current interests are ...
 - Modeling and analysis of communication networks
-- Programming (JavaScript, Python, Mathematica)
+- Programming (JavaScript, Python, Mathematica, UNIX/Linux
+  programming)
 - Gaming (League of Legends, FPS)
 
 * Publications

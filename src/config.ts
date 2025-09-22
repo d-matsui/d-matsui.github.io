@@ -18,6 +18,6 @@ export const SITE = {
   },
   dynamicOgImage: true,
   dir: "ltr",
-  lang: "ja",
+  lang: "en",
   timezone: "Asia/Tokyo",
 } as const;

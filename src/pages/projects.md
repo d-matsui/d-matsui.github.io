@@ -3,15 +3,32 @@ layout: ../layouts/AboutLayout.astro
 title: "Projects"
 ---
 
-## Projects
+### Rustile
 
-Here are some of the projects I've been working on:
+A tiling window manager for X11 written in Rust.
 
-### Coming Soon
+- Binary Space Partitioning (BSP) for automatic window tiling
+- Keyboard-driven workflow
+- TOML configuration
 
-- Currently working on several projects that will be shared here soon.
-- Stay tuned for updates!
+[GitHub](https://github.com/d-matsui/rustile)
 
----
+### kokolog
 
-_This page will be updated as I complete and publish my projects._
+A mobile app for practicing Cognitive Behavioral Therapy's 7-column method.
+
+- Quick memo and 7-column CBT forms
+- Mood tracking and visualization
+- React Native / TypeScript
+
+[GitHub](https://github.com/d-matsui/kokolog)
+
+### md2taiga
+
+Tools for creating Taiga.io user stories from markdown text.
+
+- Markdown to user stories and subtasks conversion
+- Web application and CLI tool
+- Python / Flask
+
+[Web Version](https://github.com/d-matsui/md2taiga) | [CLI Version](https://github.com/d-matsui/md2taiga_cli)

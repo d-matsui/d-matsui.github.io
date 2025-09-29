@@ -26,41 +26,53 @@ const recentPosts = sortedPosts.slice(0, 3); // Show only 3 recent posts
       </h1>
 
       <p class="mb-4">
-        Welcome to my personal website. I'm a software engineer passionate about
-        technology, AI, and continuous learning.
+        I'm a software engineer passionate about technology, AI, and continuous learning.
       </p>
+
+      <h2 class="text-2xl font-semibold mt-8 mb-4">About Me</h2>
 
       <p class="mb-4">
         This site serves as my digital garden where I document my learning journey,
         share technical insights, and showcase projects I'm working on.
       </p>
 
-      <p class="mb-4">
-        My interests include:
-      </p>
+      <h3 class="text-xl font-semibold mt-6 mb-3">Interests</h3>
       <ul class="ms-4 mb-4 list-disc list-inside">
-        <li>Software Engineering & Architecture</li>
-        <li>Artificial Intelligence & Machine Learning</li>
-        <li>Programming Languages (especially Rust)</li>
-        <li>Open Source Development</li>
+        <li><strong>Software Engineering</strong>: Building robust and scalable applications</li>
+        <li><strong>Artificial Intelligence</strong>: Exploring machine learning and AI applications</li>
+        <li><strong>Programming Languages</strong>: Currently learning Rust and exploring modern development tools</li>
+        <li><strong>Open Source</strong>: Contributing to and learning from the community</li>
       </ul>
 
-      <div class="flex gap-4 mt-6">
-        <LinkButton href="/about/" variant="accent">
-          More About Me
+      <h3 class="text-xl font-semibold mt-6 mb-3">Purpose of This Site</h3>
+      <ol class="ms-4 mb-4 list-decimal list-inside">
+        <li><strong>Learning Journal</strong>: Documenting my technical journey and discoveries</li>
+        <li><strong>Knowledge Sharing</strong>: Helping others who might face similar challenges</li>
+        <li><strong>Portfolio</strong>: Showcasing projects and technical capabilities</li>
+      </ol>
+
+      <div class="flex gap-4 mt-8">
+        <LinkButton href="/projects/">
+          View My Projects
           <IconArrowRight class="inline-block rtl:-rotate-180" />
         </LinkButton>
-        <LinkButton href="/projects/">
-          View Projects
+        <LinkButton href="/posts/">
+          Read Blog Posts
           <IconArrowRight class="inline-block rtl:-rotate-180" />
         </LinkButton>
       </div>
 
+      <h3 class="text-xl font-semibold mt-8 mb-3">Connect</h3>
+      <p class="mb-4">Feel free to reach out or follow my work:</p>
+      <ul class="ms-4 mb-4 list-disc list-inside">
+        <li>GitHub: <a href="https://github.com/d-matsui" class="underline decoration-dashed underline-offset-4 hover:text-accent">@d-matsui</a></li>
+        <li>More links coming soon...</li>
+      </ul>
+
       {
         // only display if at least one social link is enabled
         SOCIALS.length > 0 && (
-          <div class="mt-8 flex flex-col sm:flex-row sm:items-center">
-            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">Connect with me:</div>
+          <div class="mt-6 flex flex-col sm:flex-row sm:items-center">
             <Socials />
           </div>
         )
@@ -88,6 +100,19 @@ const recentPosts = sortedPosts.slice(0, 3); // Show only 3 recent posts
         </>
       )
     }
+
+    <Hr />
+
+    <section id="tech-stack" class="pt-8 pb-6">
+      <h3 class="text-xl font-semibold mb-3">Tech Stack</h3>
+      <p class="mb-3">This website is built with:</p>
+      <ul class="ms-4 list-disc list-inside">
+        <li><a href="https://astro.build/" class="underline decoration-dashed underline-offset-4 hover:text-accent">Astro</a> - Static Site Generator</li>
+        <li><a href="https://tailwindcss.com/" class="underline decoration-dashed underline-offset-4 hover:text-accent">Tailwind CSS</a> - Styling</li>
+        <li><a href="https://www.typescriptlang.org/" class="underline decoration-dashed underline-offset-4 hover:text-accent">TypeScript</a> - Type Safety</li>
+        <li>Deployed on <a href="https://pages.github.com/" class="underline decoration-dashed underline-offset-4 hover:text-accent">GitHub Pages</a></li>
+      </ul>
+    </section>
   </main>
   <Footer />
 </Layout>

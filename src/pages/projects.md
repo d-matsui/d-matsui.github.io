@@ -14,4 +14,4 @@ Here are some of the projects I've been working on:
 
 ---
 
-*This page will be updated as I complete and publish my projects.*
+_This page will be updated as I complete and publish my projects._

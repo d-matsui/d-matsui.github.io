@@ -13,11 +13,20 @@ This is an AstroPaper blog site - a minimal, responsive, accessible and SEO-frie
 - `npm run build` - Type checks, builds site, generates pagefind search index, and copies to public folder
 - `npm run preview` - Preview production build locally
 
-### Code Quality
-- `npm run format` - Format code with Prettier
+### Code Quality (IMPORTANT: Run before committing!)
+- `npm run lint` - Lint with ESLint (checks for unused variables, etc.)
 - `npm run format:check` - Check code formatting
-- `npm run lint` - Lint with ESLint
+- `npm run format` - Auto-format code with Prettier
+- `npm run build` - Ensure build succeeds
 - `npm run sync` - Generate TypeScript types for Astro modules
+
+### Pre-commit Checklist
+Before committing changes, ALWAYS run these commands to ensure CI passes:
+1. `npm run lint` - Fix any linting errors
+2. `npm run format` - Format code properly
+3. `npm run build` - Verify build succeeds
+
+CI will fail if any of these checks don't pass!
 
 ### Docker
 - `docker compose up -d` - Run AstroPaper in Docker

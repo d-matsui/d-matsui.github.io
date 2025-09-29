@@ -3,13 +3,11 @@ import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import Socials from "@/components/Socials.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import Card from "@/components/Card.astro";
 import Hr from "@/components/Hr.astro";
 import getSortedPosts from "@/utils/getSortedPosts";
 import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
-import { SOCIALS } from "@/constants";
 
 const posts = await getCollection("blog");
 const sortedPosts = getSortedPosts(posts);
@@ -24,86 +22,66 @@ const recentPosts = sortedPosts.slice(0, 3); // Show only 3 recent posts
         Hi, I'm Daiki Matsui
       </h1>
 
-      <p class="mb-4">
-        I'm a software engineer passionate about technology, AI, and continuous
-        learning.
-      </p>
-
       <h2 class="mt-8 mb-4 text-2xl font-semibold">About Me</h2>
-
-      <p class="mb-4">
-        This site serves as my digital garden where I document my learning
-        journey, share technical insights, and showcase projects I'm working on.
+      <p class="mb-6">
+        Software engineer driven by curiosity and a passion for exploring
+        different technologies and building useful things. I love learning new
+        approaches and working on diverse projects.
       </p>
 
-      <h3 class="mt-6 mb-3 text-xl font-semibold">Interests</h3>
-      <ul class="ms-4 mb-4 list-inside list-disc">
-        <li>
-          <strong>Software Engineering</strong>: Building robust and scalable
-          applications
-        </li>
-        <li>
-          <strong>Artificial Intelligence</strong>: Exploring machine learning
-          and AI applications
-        </li>
-        <li>
-          <strong>Programming Languages</strong>: Currently learning Rust and
-          exploring modern development tools
-        </li>
-        <li>
-          <strong>Open Source</strong>: Contributing to and learning from the
-          community
-        </li>
-      </ul>
+      <h2 class="mt-8 mb-4 text-2xl font-semibold">Work</h2>
+      <div class="mb-6">
+        <p class="mb-2">
+          <strong>Software Engineer</strong> | NTT Communications (2019 - Present)
+        </p>
+        <ul class="ms-4 list-inside list-disc">
+          <li>
+            Developer of the WebRTC platform SkyWay which enables real-time
+            communication on the web
+          </li>
+          <li>
+            Full-stack development: Server-side, frontend, JavaScript SDK
+            development, automation tools
+          </li>
+          <li>Infrastructure: AWS, GCP</li>
+        </ul>
+      </div>
 
-      <h3 class="mt-6 mb-3 text-xl font-semibold">Purpose of This Site</h3>
-      <ol class="ms-4 mb-4 list-inside list-decimal">
-        <li>
-          <strong>Learning Journal</strong>: Documenting my technical journey
-          and discoveries
-        </li>
-        <li>
-          <strong>Knowledge Sharing</strong>: Helping others who might face
-          similar challenges
-        </li>
-        <li>
-          <strong>Portfolio</strong>: Showcasing projects and technical
-          capabilities
-        </li>
-      </ol>
-
-      <div class="mt-8 flex gap-4">
+      <h2 class="mt-8 mb-4 text-2xl font-semibold">Projects</h2>
+      <p class="mb-4">
+        I enjoy building various tools and applications in my spare time, from
+        developer productivity tools to everyday utility apps.
+      </p>
+      <div class="mb-6">
         <LinkButton href="/projects/">
-          View My Projects
-          <IconArrowRight class="inline-block rtl:-rotate-180" />
-        </LinkButton>
-        <LinkButton href="/posts/">
-          Read Blog Posts
+          View All Projects
           <IconArrowRight class="inline-block rtl:-rotate-180" />
         </LinkButton>
       </div>
 
-      <h3 class="mt-8 mb-3 text-xl font-semibold">Connect</h3>
-      <p class="mb-4">Feel free to reach out or follow my work:</p>
-      <ul class="ms-4 mb-4 list-inside list-disc">
-        <li>
-          GitHub: <a
-            href="https://github.com/d-matsui"
+      <h2 class="mt-8 mb-4 text-2xl font-semibold">Education</h2>
+      <div class="mb-6">
+        <p class="mb-2">
+          <strong>Master's degree in Computer Science</strong> | Kwansei Gakuin University
+          (2017-2019)
+        </p>
+        <ul class="ms-4 mb-4 list-inside list-disc">
+          <li>
+            Focus: Network Science, graph exploration algorithms, mathematical
+            modeling
+          </li>
+        </ul>
+        <p>
+          <a
+            href="/thesis.pdf"
             class="underline decoration-dashed underline-offset-4 hover:text-accent"
-            >@d-matsui</a
+            target="_blank"
+            rel="noopener noreferrer"
           >
-        </li>
-        <li>More links coming soon...</li>
-      </ul>
-
-      {
-        // only display if at least one social link is enabled
-        SOCIALS.length > 0 && (
-          <div class="mt-6 flex flex-col sm:flex-row sm:items-center">
-            <Socials />
-          </div>
-        )
-      }
+            Master Thesis (PDF)
+          </a>
+        </p>
+      </div>
     </section>
 
     {
@@ -129,43 +107,6 @@ const recentPosts = sortedPosts.slice(0, 3); // Show only 3 recent posts
         </>
       )
     }
-
-    <Hr />
-
-    <section id="tech-stack" class="pt-8 pb-6">
-      <h3 class="mb-3 text-xl font-semibold">Tech Stack</h3>
-      <p class="mb-3">This website is built with:</p>
-      <ul class="ms-4 list-inside list-disc">
-        <li>
-          <a
-            href="https://astro.build/"
-            class="underline decoration-dashed underline-offset-4 hover:text-accent"
-            >Astro</a
-          > - Static Site Generator
-        </li>
-        <li>
-          <a
-            href="https://tailwindcss.com/"
-            class="underline decoration-dashed underline-offset-4 hover:text-accent"
-            >Tailwind CSS</a
-          > - Styling
-        </li>
-        <li>
-          <a
-            href="https://www.typescriptlang.org/"
-            class="underline decoration-dashed underline-offset-4 hover:text-accent"
-            >TypeScript</a
-          > - Type Safety
-        </li>
-        <li>
-          Deployed on <a
-            href="https://pages.github.com/"
-            class="underline decoration-dashed underline-offset-4 hover:text-accent"
-            >GitHub Pages</a
-          >
-        </li>
-      </ul>
-    </section>
   </main>
   <Footer />
 </Layout>

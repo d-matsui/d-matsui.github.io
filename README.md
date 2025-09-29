@@ -13,14 +13,6 @@ Visit: [https://d-matsui.github.io/](https://d-matsui.github.io/)
 - [Tailwind CSS](https://tailwindcss.com/) - Styling
 - [GitHub Pages](https://pages.github.com/) - Hosting
 
-## 📝 Features
-
-- Blog posts with markdown support
-- Project showcase
-- Dark/Light mode
-- Responsive design
-- SEO optimized
-
 ## 🚀 Development
 
 ```bash
@@ -49,7 +41,9 @@ npm run preview
 │   │   └── blog/    # Blog posts (markdown)
 │   ├── layouts/     # Page layouts
 │   ├── pages/       # Page routes
-│   └── styles/      # Global styles
+│   ├── styles/      # Global styles
+│   └── utils/       # Helper functions
+├── docs/            # Reference documentation (not published)
 └── package.json
 ```
 
@@ -57,8 +51,4 @@ npm run preview
 
 MIT License - See [LICENSE](LICENSE) file for details.
 
-## 👤 Author
-
-**Daiki Matsui**
-
-- GitHub: [@d-matsui](https://github.com/d-matsui)
+> This project is based on [AstroPaper](https://github.com/satnaing/astro-paper) by Sat Naing.

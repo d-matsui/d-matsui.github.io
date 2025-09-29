@@ -24,33 +24,26 @@ const recentPosts = sortedPosts.slice(0, 3); // Show only 3 recent posts
 
       <h2 class="mt-8 mb-4 text-2xl font-semibold">About Me</h2>
       <p class="mb-6">
-        Software engineer driven by curiosity and a passion for exploring
-        different technologies and building useful things. I love learning new
-        approaches and working on diverse projects.
+        Software engineer driven by curiosity and a passion for creating my own
+        solutions. I enjoy experimenting with new technologies and working on
+        diverse projects.
       </p>
 
-      <h2 class="mt-8 mb-4 text-2xl font-semibold">Work</h2>
-      <div class="mb-6">
-        <p class="mb-2">
-          <strong>Software Engineer</strong> | NTT Communications (2019 - Present)
-        </p>
-        <ul class="ms-4 list-inside list-disc">
-          <li>
-            Developer of the WebRTC platform SkyWay which enables real-time
-            communication on the web
-          </li>
-          <li>
-            Full-stack development: Server-side, frontend, JavaScript SDK
-            development, automation tools
-          </li>
-          <li>Infrastructure: AWS, GCP</li>
-        </ul>
-      </div>
+      <h2 class="mt-8 mb-4 text-2xl font-semibold">💼 Work</h2>
+      <p class="mb-6">
+        I work at <strong>NTT Communications</strong> (2019 - Present) developing
+        the WebRTC platform SkyWay that enables real-time communication on the web.
+        My work involves full-stack development including server-side and frontend
+        components, JavaScript SDK development, and building automation tools. I
+        also work with cloud infrastructure on AWS and GCP.
+      </p>
 
-      <h2 class="mt-8 mb-4 text-2xl font-semibold">Projects</h2>
+      <h2 class="mt-8 mb-4 text-2xl font-semibold">🛠️ Projects</h2>
       <p class="mb-4">
-        I enjoy building various tools and applications in my spare time, from
-        developer productivity tools to everyday utility apps.
+        I enjoy building various tools and applications in my spare time,
+        ranging from developer productivity tools to everyday utility apps.
+        These projects help me explore new technologies and solve interesting
+        problems.
       </p>
       <div class="mb-6">
         <LinkButton href="/projects/">
@@ -59,29 +52,23 @@ const recentPosts = sortedPosts.slice(0, 3); // Show only 3 recent posts
         </LinkButton>
       </div>
 
-      <h2 class="mt-8 mb-4 text-2xl font-semibold">Education</h2>
-      <div class="mb-6">
-        <p class="mb-2">
-          <strong>Master's degree in Computer Science</strong> | Kwansei Gakuin University
-          (2017-2019)
-        </p>
-        <ul class="ms-4 mb-4 list-inside list-disc">
-          <li>
-            Focus: Network Science, graph exploration algorithms, mathematical
-            modeling
-          </li>
-        </ul>
-        <p>
-          <a
-            href="/thesis.pdf"
-            class="underline decoration-dashed underline-offset-4 hover:text-accent"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Master Thesis (PDF)
-          </a>
-        </p>
-      </div>
+      <h2 class="mt-8 mb-4 text-2xl font-semibold">🎓 Education</h2>
+      <p class="mb-4">
+        I completed my <strong>Master's degree in Computer Science</strong> at Kwansei
+        Gakuin University (2017-2019), focusing on Network Science, graph exploration
+        algorithms, and mathematical modeling. My research involved analyzing network
+        structures and developing algorithms for efficient graph traversal.
+      </p>
+      <p class="mb-6">
+        <a
+          href="/thesis.pdf"
+          class="underline decoration-dashed underline-offset-4 hover:text-accent"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Master Thesis (PDF)
+        </a>
+      </p>
     </section>
 
     {
@@ -90,7 +77,7 @@ const recentPosts = sortedPosts.slice(0, 3); // Show only 3 recent posts
           <Hr />
           <section id="recent-posts" class="pt-12 pb-6">
             <h2 class="mb-4 text-2xl font-semibold tracking-wide">
-              Recent Posts
+              📝 Recent Posts
             </h2>
             <ul>
               {recentPosts.map(data => (

@@ -4,72 +4,85 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an AstroPaper blog site - a minimal, responsive, accessible and SEO-friendly Astro blog theme built with TypeScript and TailwindCSS.
+Personal website and blog for Daiki Matsui, built with Astro. Features a homepage with self-introduction, projects showcase, blog posts, and tag-based navigation.
+
+## Pre-commit Checklist (CRITICAL)
+
+Before committing ANY changes, you MUST run these commands to ensure CI passes:
+
+1. `npm run lint` - Fix any linting errors (unused variables, etc.)
+2. `npm run format` - Format code with Prettier
+3. `npm run build` - Verify build succeeds
+
+**CI will fail if any of these checks don't pass!**
 
 ## Key Commands
 
 ### Development
-- `npm run dev` - Starts local dev server at localhost:4321
-- `npm run build` - Type checks, builds site, generates pagefind search index, and copies to public folder
+- `npm run dev` - Start local dev server at localhost:4321
 - `npm run preview` - Preview production build locally
-
-### Code Quality (IMPORTANT: Run before committing!)
-- `npm run lint` - Lint with ESLint (checks for unused variables, etc.)
-- `npm run format:check` - Check code formatting
-- `npm run format` - Auto-format code with Prettier
-- `npm run build` - Ensure build succeeds
 - `npm run sync` - Generate TypeScript types for Astro modules
 
-### Pre-commit Checklist
-Before committing changes, ALWAYS run these commands to ensure CI passes:
-1. `npm run lint` - Fix any linting errors
-2. `npm run format` - Format code properly
-3. `npm run build` - Verify build succeeds
+### Build & Deploy
+- `npm run build` - Type check, build site, generate search index
+- Deploys automatically to GitHub Pages via GitHub Actions on push to main
 
-CI will fail if any of these checks don't pass!
+### Code Quality
+- `npm run lint` - ESLint check
+- `npm run format` - Auto-format with Prettier
+- `npm run format:check` - Check formatting without fixing
 
-### Docker
-- `docker compose up -d` - Run AstroPaper in Docker
-- `docker build -t astropaper .` - Build Docker image
-- `docker run -p 4321:80 astropaper` - Run container
+## Project Structure
 
-## Architecture and Structure
+### Content
+- `src/data/blog/` - Blog posts in Markdown format
+- `src/pages/` - Page routes (index, projects, posts, tags)
+- `docs/reference/` - Reference documentation (not published)
 
-### Content Management
-- Blog posts are stored in `src/data/blog/` as Markdown files
-- Content is managed via Astro's Content Collections API defined in `src/content.config.ts`
-- Posts support frontmatter with fields like title, pubDatetime, tags, draft status, etc.
-
-### Core Configuration
-- `src/config.ts` - Main site configuration (title, author, URLs, features)
-- `astro.config.ts` - Astro build configuration with integrations (sitemap, TailwindCSS)
-- Posts are paginated with configurable `postPerPage` and `postPerIndex` settings
+### Configuration
+- `src/config.ts` - Site configuration (title, author, features)
+- `astro.config.ts` - Build configuration
+- `.github/workflows/` - CI/CD pipelines (uses npm, not pnpm!)
 
 ### Key Features
-- Dynamic OG image generation for posts at `/posts/[slug]/index.png`
-- Pagefind static search with UI auto-generated at build time
-- Light/dark theme toggle with system preference detection
-- Sitemap and RSS feed generation
-- Draft posts support (hidden in production)
-- Optional Google Site Verification via environment variable
+- Homepage with integrated About section
+- Projects showcase page
+- Blog with tags and pagination
+- Light/dark theme toggle
+- Static search with Pagefind
+- RSS feed at `/rss.xml`
+- Dynamic OG images for posts
 
-### Styling and UI
-- TailwindCSS v4 with typography plugin
-- Responsive design from mobile to desktop
-- Custom color schemes configurable in `src/styles/base.css`
-- Icons from Tabler Icons library
+## Writing Blog Posts
 
-### Key Directories
-- `src/pages/` - Astro page routes
-- `src/layouts/` - Layout components
-- `src/components/` - Reusable UI components
-- `src/utils/` - Helper functions (post sorting, tag extraction, OG image generation)
-- `public/` - Static assets served directly
-- `public/pagefind/` - Auto-generated search index (created during build)
+Create new posts in `src/data/blog/` with this frontmatter:
+
+```markdown
+---
+author: Daiki Matsui
+pubDatetime: 2025-09-22T10:00:00Z
+title: Post Title
+slug: url-slug
+featured: false
+draft: false
+tags:
+  - tag1
+  - tag2
+description: Brief description for SEO
+---
+```
+
+## Site Navigation Structure
+
+- **Home** (/) - Self-introduction and recent posts
+- **Projects** (/projects) - Project showcase
+- **Posts** (/posts) - All blog posts
+- **Tags** (/tags) - Browse posts by tag
 
 ## Important Notes
 
-- Environment variable `PUBLIC_GOOGLE_SITE_VERIFICATION` can be set for Google Search Console
-- The site uses Astro's Image optimization with responsive layout
-- Markdown files support Remark plugins for TOC and collapsible sections
-- Code blocks support syntax highlighting with Shiki and custom transformers
+- Site deploys to https://d-matsui.github.io/
+- Archives feature is disabled (`showArchives: false`)
+- No GitHub edit links on posts (`editPost.enabled: false`)
+- Language is set to English (`lang: "en"`)
+- Remember to run pre-commit checks before pushing!

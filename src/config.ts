@@ -2,7 +2,7 @@ export const SITE = {
   website: "https://d-matsui.github.io/",
   author: "Daiki Matsui",
   profile: "https://github.com/d-matsui",
-  desc: "Personal blog about software engineering, AI, and learning journey.",
+  desc: "Personal website and blog about software development and learning.",
   title: "Daiki Matsui",
   ogImage: "astropaper-og.jpg",
   lightAndDarkMode: true,

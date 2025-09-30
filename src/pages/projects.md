@@ -5,7 +5,9 @@ title: "Projects"
 
 ### Rustile
 
-A tiling window manager for X11 written in Rust.
+An X11 tiling window manager written in Rust.
+
+![Rustile Screenshot](/rustile-screenshot.png)
 
 - Binary Space Partitioning (BSP) for automatic window tiling
 - Keyboard-driven workflow

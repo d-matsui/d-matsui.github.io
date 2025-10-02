@@ -72,6 +72,19 @@ description: Brief description for SEO
 ---
 ```
 
+### IMPORTANT: Date Validation Checklist
+
+**When CREATING new blog posts:**
+
+1. **Use current date**: Run `date -Iseconds` to get the correct current timestamp
+2. **Verify the date**: Double-check the year and month are correct (common mistake: writing `2025-01-XX` instead of `2025-09-XX`)
+3. **Check before commit**: Ensure the date is not in the future and matches the intended publish date
+
+**When EDITING existing blog posts:**
+
+- **DO NOT change `pubDatetime`** - this is the original publication date and should remain unchanged
+- Only update the content, not the publication date
+
 ## Site Navigation Structure
 
 - **Home** (/) - Self-introduction and recent posts

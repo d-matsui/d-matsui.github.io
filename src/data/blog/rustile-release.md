@@ -1,6 +1,6 @@
 ---
 author: Daiki Matsui
-pubDatetime: 2025-01-30T05:30:00Z
+pubDatetime: 2025-09-30T05:30:00Z
 title: "自作ウィンドウマネージャーをリリースしました"
 slug: rustile-release
 featured: true

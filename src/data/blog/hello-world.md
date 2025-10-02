@@ -1,6 +1,6 @@
 ---
 author: Daiki Matsui
-pubDatetime: 2025-01-29T07:30:00Z
+pubDatetime: 2025-09-29T07:30:00Z
 title: "はじめてのブログ"
 slug: first-blog-post
 featured: true

@@ -20,4 +20,5 @@ export const SITE = {
   dir: "ltr",
   lang: "en",
   timezone: "Asia/Tokyo",
+  googleAnalyticsId: "G-JJWX21J9C2", // Google Analytics measurement ID
 } as const;

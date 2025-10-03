@@ -131,6 +131,28 @@ const structuredData = {
     <ClientRouter />
 
     <script is:inline src="/toggle-theme.js"></script>
+
+    {
+      // Google Analytics with Partytown
+      SITE.googleAnalyticsId && (
+        <>
+          <script
+            type="text/partytown"
+            src={`https://www.googletagmanager.com/gtag/js?id=${SITE.googleAnalyticsId}`}
+          />
+          <script
+            type="text/partytown"
+            is:inline
+            set:html={`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${SITE.googleAnalyticsId}');
+            `}
+          />
+        </>
+      )
+    }
   </head>
   <body>
     <slot />

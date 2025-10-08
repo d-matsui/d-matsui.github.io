@@ -9,7 +9,7 @@ tags:
   - software-development
   - AI
   - japanese
-description: "Vibe-CodingでRustileを開発する中で、コードを十分理解しないまま開発を進めることに違和感を覚えた。ADR（Architecture Decision Records）を導入することで、設計判断を明文化し、段階的に開発を進められるようにした話。"
+description: "ADR（Architecture Decision Records）を導入することで、設計判断を明文化し、Vibe-Codingを段階的に進められるようにした話。"
 ---
 
 ## はじめに

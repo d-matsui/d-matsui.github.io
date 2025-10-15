@@ -17,9 +17,9 @@ description: "Claude Codeに生成させたコードを題材にして、Elisp�
 
 私は大学3年生のときからEmacsを使っています。当時所属していた研究室の指導教員のすすめで、「なんだかかっこよさそう」と思って使い始めたのを覚えています。
 
-長年使ってきたとはいえ、使いこなせているとは言えません。インターネットで便利な機能を検索して自分のEmacsにインストールし、少し設定を変えるというのが、私の主なEmacsの使い方でした。
+長年Emacsを使ってきたとはいえ、まだまだ使いこなせていません。インターネットで便利な機能を検索して自分のEmacsにインストールし、少し設定を変えるというのが、私の主なEmacsの使い方です。
 
-これまで、Elispを学ぶためにいくつかの本や既存のコードを読んでみましたが、あまり身につきませんでした。関数型言語に慣れていないことや、Elispのデバッグ方法がわからなかったこともあり、次第にモチベーションが下がっていったのだと思います。
+これまで、Elispを学ぶためにいくつかの本や既存のコードを読んでみましたが、あまり身につきませんでした。関数型言語に慣れていないことや、Elisp (Emacs Lisp) のデバッグ方法がわからなかったこともあり、次第にモチベーションが下がっていったのだと思います。
 
 そんな中、AIを活用した新しい学習方法を試してみることにしました。教科書やマニュアルを読むのは個人的に楽しめなかったので、どうせなら自分が欲しいものを題材にして、実践的に学んでみようと考えたのです。
 
@@ -27,35 +27,43 @@ description: "Claude Codeに生成させたコードを題材にして、Elisp�
 
 ## 何を作ったか
 
-Claude Codeに、日本語文章を添削してくれるシステム (sakubun-checker) を作ってもらいました。Geminiの無料API (2.5 Flash) を使用して、日本語の作文技術の独自ルールに基づいて日本語文章を評価してくれます。
+Claude Codeに、日本語文章を添削してくれるシステム (sakubun-checker) を作ってもらいました。Geminiの無料API (2.5 Flash) を使用して、日本語の作文技術のルールに基づいて日本語文章を評価してくれます。
 
 ![sakubun-checkerでこの記事を添削する様子](/sakubun-checker-demo.png)
 
-Elisp, Pythonスクリプト, 日本語作文技術のルールをまとめたプロンプトの3つで構成されています。Elispは入出力を担当し、PythonスクリプトはGeminiへのAPIリクエストを担当しています。プロンプトには「修飾・被修飾関係の言葉を近付ける」といったルールを記述しつつ、マークダウン形式で添削結果を出力するようにしています。
+Elisp, Pythonスクリプト, 日本語作文技術のルールをまとめたプロンプトの3つで構成されています。Elispは入出力を担当し、PythonスクリプトはGeminiへのAPIリクエストを担当しています。プロンプトには「修飾語・被修飾語を近付ける」といったルールを記述しつつ、マークダウン形式で添削結果を出力するようにしています。
 
 ## コードを読み解く
 
-Claude Codeが生成したコードを読み解きながら、Elisp特有の概念や慣習を学んでいきました。開発途中のコードも含めて、特に印象的だった学びをいくつか紹介します。
+Claude Codeが生成したコードを読み解きながら、Elisp特有の概念や慣習を学んでいきました。開発途中のコードも含めて、特にためになった学びをいくつか紹介します。
 
-### 外部プロセスの実行 (PythonスクリプトとのI/O)
+なお、以下のコード例は学習のために簡略化しています。実際のコードにはエラーハンドリングやバッファ管理などの処理が含まれます。
+
+### 外部プロセスの実行
 
 ElispからPythonスクリプトを呼び出す方法を学びました。
 
-最初は`call-process`で同期的に実行していましたが、Gemini APIからのレスポンスに数秒かかってEmacsがハングするので、`make-process`を使って非同期処理に変更しました。
+最初は `call-process` で同期的に実行していましたが、Gemini APIからのレスポンスに数秒かかってEmacsが止まるので、`make-process` を使って非同期処理に変更しました。
 
 ```elisp
 ;; 同期処理版
-(call-process "python3" nil output-buffer nil "check.py" text)
+(call-process "python3"                 ; 実行するプログラム
+              nil nil nil               ; 入出力設定
+              "check.py" text prompt)   ; スクリプトと引数
 
 ;; 非同期処理版
 (make-process
-  :command (list "python3" "check.py" text)
-  :sentinel (lambda (proc event)
-              ;; 完了時にコールバックが呼ばれる
-              (funcall callback result)))
+ :name "sakubun-check"
+ :buffer buffer
+ :command (list "python3" "check.py" text prompt)
+ :sentinel (lambda (proc event)
+             ;; Pythonスクリプトの実行が終わったときにこの関数が呼ばれる
+             (message "チェック完了!")))
 ```
 
-非同期処理版では、`sentinel` にコールバック関数を渡すことで、文章チェック実行中もEmacsを操作できるようになります。
+`call-process`の引数は、第1引数がプログラム名、第2〜4引数が入出力設定、第5引数以降がプログラムに渡す引数です。
+
+非同期処理版では、`make-process`の`:sentinel`に実行終了時の処理を指定します。これにより、文章チェック実行中もEmacsを操作できるようになります。
 
 ### レキシカルスコープ (クロージャを使うための設定)
 
@@ -82,33 +90,33 @@ Symbol's value as variable is void: callback
 ```elisp
 (let ((buffer (generate-new-buffer "*temp*")))
   (unwind-protect
-      ;; メイン処理（エラーが起きるかも）
-      (call-process ...)
-    ;; 必ず実行されるクリーンアップ
-    (kill-buffer buffer)))
+   ;; メイン処理（エラーが起きるかも）
+   (call-process ...)
+   ;; 必ず実行されるクリーンアップ
+   (kill-buffer buffer)))
 ```
 
 `unwind-protect`は、JavaScriptの`try-finally`やPythonの`try-except-finally`と同じ役割で、正常終了でもエラーでも、必ず処理を実行してくれます。
 
 ### データ構造 (cons cellでの値の返却)
 
-Elispでは、成功/失敗と結果データを同時に返すために`cons cell`が使えます。
+Pythonスクリプトから終了コードと出力結果の2つの情報を同時に受け取るために、cons cellを使っています。
 
 ```elisp
-;; 成功時
-(cons 0 "チェック結果のテキスト")
+;; Pythonスクリプトの実行結果を返す
+(cons 0 "添削結果のテキスト")           ; 成功時: 終了コード0
+(cons 1 "Error: API key not found")  ; 失敗時: 終了コード1
 
-;; 失敗時
-(cons 1 "エラーメッセージ")
-
-;; 使う側
-(if (= (car result) 0)
-    (cdr result)  ; 成功 → データを取得
-  (cdr result))   ; 失敗 → エラーメッセージ
+;; 結果を受け取って処理する
+(lambda (result)
+  (if (= (car result) 0)
+   ;; 成功: 添削結果を表示
+   (sakubun-show-result (cdr result))
+   ;; 失敗: エラーメッセージを表示
+   (message "エラー: %s" (cdr result))))
 ```
 
-`car`は最初の要素（終了コード）、`cdr`は2番目の要素（データ）を取得します。
-この命名は歴史的なもので、"Contents of Address Register"と"Contents of Decrement Register"の略だそうです。初見だと謎でした。
+`car`で終了コード、`cdr`で出力結果を取り出せます。この命名は歴史的なもので、"Contents of Address Register"と"Contents of Decrement Register"の略だそうです。初見だと謎でした。
 
 ### 設定値の定義 - defvar vs defcustom
 
@@ -134,8 +142,8 @@ AIが最初に生成したコードには、カーソル位置の段落を取得
 ```elisp
 (save-excursion
   (buffer-substring-no-properties
-    (progn (backward-paragraph) (point))
-    (progn (forward-paragraph) (point))))
+   (progn (backward-paragraph) (point))
+   (progn (forward-paragraph) (point))))
 ```
 
 こんなlow-levelの実装をすることに違和感があったので、組み込み関数がないのか聞いてみると、これはEmacs標準の`thing-at-point`で置き換えられることを知りました。

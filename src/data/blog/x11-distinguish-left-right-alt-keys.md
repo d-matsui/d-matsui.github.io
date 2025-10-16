@@ -4,7 +4,7 @@ pubDatetime: 2025-10-16T16:32:43+09:00
 title: "X11で左右のAltキーを区別する"
 slug: x11-distinguish-left-right-alt-keys
 featured: true
-draft: true
+draft: false
 tags:
   - X11
   - Linux

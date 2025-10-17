@@ -7,7 +7,7 @@ featured: true
 draft: false
 tags:
   - blog
-  - japanese
+  - essay
 description: "個人ブログを開設しました。技術的な学びや経験を共有していきます"
 ---
 

@@ -6,10 +6,11 @@ slug: x11-distinguish-left-right-alt-keys
 featured: true
 draft: false
 tags:
-  - X11
-  - Linux
+  - x11
+  - linux
   - keyboard
-  - Rust
+  - rust
+  - implementation
 description: "X11でAlt_LとAlt_Rを個別に扱う方法を紹介。キーボード処理の基礎について触れつつ、XQueryKeymapを使った実装アプローチを解説。"
 ---
 
@@ -23,7 +24,7 @@ X11で動くアプリケーション (ウィンドウマネージャー) を開�
 
 > 本記事では、X11 Protocol, X Window System関連の用語を総称して「X11」と表記します。
 
-## 結論: XQueryKeymapを使う方法
+## 結論: XQueryKeymapを使う
 
 X11で左右のAltキーを区別する一つの方法として、X11 Protocolの`QueryKeymap`リクエスト (Rustのx11rbでは`query_keymap()`関数) を使うアプローチがあります。
 

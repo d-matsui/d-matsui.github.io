@@ -9,7 +9,7 @@ tags:
   - rust
   - linux
   - window-manager
-  - japanese
+  - essay
 description: "プライベートでコツコツ、Claudeと一緒に自分専用のウィンドウマネージャーを2ヶ月で作った話"
 ---
 

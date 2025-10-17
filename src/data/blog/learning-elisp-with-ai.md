@@ -9,7 +9,7 @@ tags:
   - elisp
   - emacs
   - ai
-  - learning
+  - tutorial
 description: "Claude Codeに生成させたコードを題材にして、Elisp特有の構文や概念を学んでいくアプローチ。"
 ---
 

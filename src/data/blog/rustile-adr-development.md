@@ -6,9 +6,11 @@ slug: rustile-adr-development
 featured: true
 draft: false
 tags:
-  - software-development
-  - AI
-  - japanese
+  - rust
+  - window-manager
+  - ai
+  - architecture
+  - essay
 description: "ADR（Architecture Decision Records）を導入することで、設計判断を明文化し、Vibe-Codingを段階的に進められるようにした話。"
 ---
 

@@ -2,6 +2,7 @@ import { defineConfig, envField } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import partytown from "@astrojs/partytown";
+import mermaid from "astro-mermaid";
 import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
 import {
@@ -16,6 +17,10 @@ import { SITE } from "./src/config";
 export default defineConfig({
   site: SITE.website,
   integrations: [
+    mermaid({
+      theme: "default",
+      autoTheme: true,
+    }),
     sitemap({
       filter: page => SITE.showArchives || !page.endsWith("/archives"),
     }),

@@ -11,42 +11,45 @@ tags:
   - keyboard
   - rust
   - implementation
-description: "X11でAlt_LとAlt_Rを個別に扱う方法を紹介。キーボード処理の基礎について触れつつ、XQueryKeymapを使った実装アプローチを解説。"
+description: "X11でAlt_LとAlt_Rを個別に扱う方法を紹介。キーボード処理の基礎について触れつつ、QueryKeymapを使った実装アプローチを解説。"
 ---
 
 ## はじめに
 
-自分好みのショートカットキーを設定する際、キーボードの左右のAltキーを区別して使いたいときがあります。例えば、「左Alt (Alt_L) + m」でChromeを起動して、「右Alt (Alt_R) + m」ではTerminalを起動するといった具合です。
+自分好みのショートカットキーを設定する際、キーボードの左右のAltキー (Alt_L, Alt_R) を区別して使いたいときがあります。例えば、「Alt_L + m」でChromeを起動して、「Alt_R + m」ではTerminalを起動するといった具合です。
 
-X11で動くアプリケーション (ウィンドウマネージャー) を開発する際に、この機能を実装しようとしたのですが、一手間工夫が必要でした。
+X11で動くアプリケーションを開発する際に、この機能を実装しようとしたところ、一手間工夫が必要でした。X11のキーイベントだけでは左右のAltを区別できないためです。
 
-本記事では、X11で左右のAltキーを区別する方法として、`XQueryKeymap` を使ったアプローチを紹介します。また、X11におけるキーボード処理の基礎となる `ModMask`, `KeyCode`, `KeySym` という3つの概念と、キーイベントだけでは区別が難しい理由についても触れます。
+本記事では、この問題を解決する方法として、`QueryKeymap` を使ったアプローチを紹介します。また、X11におけるキーボード処理の基礎となる `ModMask`, `KeyCode`, `KeySym` という3つの概念と、キーイベントだけでは区別が難しい理由についても触れます。
 
 > 本記事では、X11 Protocol, X Window System関連の用語を総称して「X11」と表記します。
 
-## 結論: XQueryKeymapを使う
+## 結論: QueryKeymapを使う
 
-X11で左右のAltキーを区別する一つの方法として、X11 Protocolの`QueryKeymap`リクエスト (Rustのx11rbでは`query_keymap()`関数) を使うアプローチがあります。
+X11で左右のAltキーを区別する一つの方法として、`QueryKeymap`リクエスト (Rustのx11rbでは`query_keymap()`関数) を使うアプローチがあります。
 
-これは、現在押されている全てのキーについて、Press/Releaseの状態を32バイトのビットベクトルで取得できるものです。各ビットが1つのKeyCodeに対応しており、Alt_L (通常KeyCode 64) と Alt_R (通常KeyCode 108) のビットを個別にチェックすることで区別が可能になります。
+これは、現在押されている全てのキーについて、Press/Releaseの状態を取得できるものです。その状態は32バイトのビットベクトルで表現されており、各ビットが1つのKeyCodeに対応しています。
+
+X11のキーイベント (たとえば Alt+mのKeyPress) では、「Altが押された状態でmが押された」といった情報しか得られません。しかし、`query_keymap()`を使えば、全キーのPress/Release状態を取得できるので、「Altのうち左のAltが押された状態でmが押された」という事がわかるのです。
+
+下記のように、Alt_L (通常KeyCode 64) と Alt_R (通常KeyCode 108) のビットを個別にチェックすることで区別が可能になります。
 
 ```rust
 // Rustとx11rbを使った実装例
 let reply = conn.query_keymap()?.reply()?;
-let keys = reply.keys;
+let keys = reply.keys;  // 32バイトのビットベクトル
 
-// Alt_LのKeyCode (通常64) とAlt_RのKeyCode (通常108) をチェック
+// Alt_LのKeyCode (通常64) とAlt_RのKeyCode (通常108) のビットをチェック
 let alt_l_pressed = is_key_pressed(&keys, 64);
 let alt_r_pressed = is_key_pressed(&keys, 108);
 ```
 
-X11のキーイベント (KeyPress) では、「Altが押されている」という情報しか得られません。しかし、`query_keymap()`を使えば、全キーのPress/Release状態を取得できるので、これを使えば左右のAltを区別できます。
-
-具体的な実装方法とその仕組みは、以下で説明します。
-
 ## なぜキーイベントだけでは区別できないのか
 
-X11のキーボード処理を理解するには、`ModMask`, `KeyCode`, `KeySym` という3つの概念を知る必要があります。
+結論を書くと、「Alt+mのようなキーコンビネーションを受け取るキーイベント (mのKeyPress) には、Modifierの情報はModMaskしか含まれないから」です。
+
+X11のキーボード処理を理解するには、`ModMask`, `KeyCode`, `KeySym` という3つの概念を知っておくのが大事です。
+以下では、それぞれについて説明しつつ、問題について書きます。
 
 ### ModMask
 
@@ -61,54 +64,35 @@ ControlMask = 0x0004  (2進数: 00000100)
 Mod1Mask    = 0x0008  (2進数: 00001000)  ← 通常はAlt
 Mod2Mask    = 0x0010  (2進数: 00010000)
 Mod3Mask    = 0x0020  (2進数: 00100000)
-Mod4Mask    = 0x0040  (2進数: 01000000)  ← 通常はSuper/Win
+Mod4Mask    = 0x0040  (2進数: 01000000)
 Mod5Mask    = 0x0080  (2進数: 10000000)
 ```
 
 (ビットマスクにすることで、複数のキーが同時に押されている状況をビット演算で表現できて、なにかと便利なのだと思います。)
 
-ここで重要なポイントは、Alt_LもAlt_Rもどちらも同じMod1Maskとして扱われるということです。
-
-X11のキーイベント (KeyPressやKeyRelease) には、このModMaskの情報が含まれています。つまり、「mキーが押された + Altも押されている」という情報は得られますが、「左Altなのか右Altなのか」は区別できません。
-
-例えば、`xev`コマンドで、左Altを押しながらmキーを押した場合のキーイベントを見てみると下記のようになります。
-
-```
-KeyPress event, serial 34, synthetic NO, window 0x2200001,
-    root 0x5ab, subw 0x0, time 12345680, (100,150), root:(150,200),
-    state 0x8, keycode 58 (keysym 0x6d, m), same_screen YES,
-    XLookupString gives 1 bytes: (6d) "m"
-```
-
-重要なポイントは以下の通りです。
-
-- `keycode 58` - これはmキーのKeyCode
-- `state 0x8` - これはMod1Mask (Alt) が押されていることを示す
-- `keysym 0x6d, m` - mキーのKeySymが表示される
-
-しかし、どちらのAltキーが押されているかの情報はありません。`state`フィールドにはModMaskのみが含まれ、Alt_LとAlt_Rは区別されません。
+ここで重要なポイントは、**Alt_LもAlt_Rもどちらも同じMod1Maskとして扱われる** ということです。
 
 ### KeyCode (物理キー)
 
-先程、KeyCodeという概念が登場しました。KeyCodeは、物理的なキーを表す番号です。
+KeyCodeは、物理的なキーを表す番号です。
 
 [X11 Protocol: Keyboards](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Keyboards)によると、KeyCodeの特徴は以下の通りです。
 
 > A KEYCODE represents a physical (or logical) key. Keycodes lie in the inclusive range [8,255]. A keycode value carries no intrinsic information, although server implementors may attempt to encode geometry information (for example, matrix) to be interpreted in a server-dependent fashion. The mapping between keys and keycodes cannot be changed using the protocol.
 
-- 8から255の範囲の整数値
+- 8から255の整数値
 - 物理的なキーに対応
 - KeyCode自体には意味的な情報は含まれない
 - X11サーバーの実装に依存する
 
-重要なのは、このレベルでは`Alt_L`と`Alt_R`は区別されるということです。例えば、標準的なLinux環境では以下のようになるはずです。
+重要なのは、**このレベルでは`Alt_L`と`Alt_R`は区別される** ということです。例えば、標準的なLinux環境では以下のようになるはずです。
 
 - Alt_LのKeyCode: 64
 - Alt_RのKeyCode: 108
 
 (これらの値は`xev`コマンドで実際に確認できます。)
 
-X11のキーイベント (KeyPress) には、KeyCodeの情報も含まれています。しかし、キーイベントは「今押されたキー」のKeyCodeしか教えてくれません。
+Altを押した状態でmを押した状況を考えます。まずAlt_LのKeyPressイベント、次にmのKeyPressイベントが順番に発生します。mのKeyPressイベントには、mのKeyCode (58) は含まれますが、Alt_LのKeyCode (64) は含まれません。含まれるのは「Altが押されている」というModMask情報だけです。
 
 ### KeySym (論理的な記号)
 
@@ -116,19 +100,18 @@ KeySym (Key Symbol) という概念を説明します。[X11 Protocol: Keyboards
 
 > A KEYSYM is an encoding of a symbol on the cap of a key. The set of defined KEYSYMs include the character sets Latin-1, Latin-2, ..., and Korean as well as a set of symbols common on keyboards (Return, Help, Tab, and so on).
 
-つまり、KeySymは以下のような特徴があります。
-
-- KeyCodeに対して割り当てられる論理的な記号名 (`a`, `B`, `Return`など)
-
-`Alt_L`と`Alt_R`も、それぞれにKeySymがあり、対応するKeyCodeを持っています。
+要はKeyCodeに対して割り当てられる論理的な記号名 (`a`, `B`, `Return`など) のことで、`Alt_L`と`Alt_R`も、それぞれにKeySymがあり、対応するKeyCodeを持っているということです。
 
 ### 問題の整理
 
 ここまでの内容を整理すると、以下のようになります。
 
-1. mのKeyPressイベントには、mのKeyCodeしか含まれず、Altキー自体のKeyCodeは含まれない
-2. mのKeyPressイベントのstateフィールドには「Altが押されている」というModMaskの情報しかなく、左右の区別ができない
-3. しかし、Alt_LとAlt_Rはそれぞれ異なるKeyCodeを持っている
+1. Alt+mを押すと、Alt_LのKeyPressとmのKeyPressという2つのイベントが発生する
+2. mのKeyPressイベントには、mのKeyCodeのみが含まれ、Alt_LのKeyCodeは含まれない
+3. mのKeyPressイベントのstateフィールドには「Altが押されている」というModMask情報しかなく、Alt_LとAlt_Rを区別できない
+4. Alt_LとAlt_Rは実際には異なるKeyCode (64と108) を持っている
+
+ここで工夫をすれば、「Alt_LとAlt_Rを個別に判定する方法」が実現できそうな気がしてきますよね。
 
 ## QueryKeymapで左右Altキーを判定する
 

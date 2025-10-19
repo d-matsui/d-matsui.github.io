@@ -10,7 +10,10 @@
     "astro": "astro",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "zenn:preview": "zenn preview",
+    "zenn:new:article": "zenn new:article",
+    "zenn:new:book": "zenn new:book"
   },
   "dependencies": {
     "@astrojs/partytown": "^2.1.4",
@@ -44,6 +47,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.6.13",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.36.0",
+    "zenn-cli": "^0.2.3"
   }
 }

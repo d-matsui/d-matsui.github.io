@@ -39,8 +39,5 @@ src/data/blog/template.md
 # Article ideas and notes (personal use, not published)
 article-ideas.md
 
-# Zenn articles (temporary working files for cross-posting)
-zenn-articles/
-
 # Zenn workflow documentation (personal reference, not published)
 docs/zenn-crosspost-workflow.md

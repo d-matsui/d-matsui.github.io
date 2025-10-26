@@ -57,6 +57,43 @@ Before committing ANY changes, you MUST run these commands to ensure CI passes:
 
 Create new posts in `src/data/blog/` with this frontmatter:
 
+### Blog Post Style Guide
+
+When writing or editing blog posts in Japanese, follow these style rules:
+
+1. **Parentheses**: Use half-width parentheses `(` `)` consistently
+   - Correct: `connect` の引数には `dpy_name` (ディスプレイネーム) を指定
+   - Incorrect: `dpy_name`（ディスプレイネーム）
+
+2. **Spacing around parentheses**: Add a half-width space before `(` and after `)`
+   - Correct: `parent` (親) には
+   - Incorrect: `parent`(親)には
+
+3. **Colons**: Use half-width colon `:` consistently
+   - Correct: `protocol` : プロトコルファミリー
+   - Incorrect: `protocol`: プロトコルファミリー (no space)
+   - Incorrect: `protocol`：プロトコルファミリー (full-width)
+
+4. **Code formatting**: Add half-width spaces before and after backticks
+   - Correct: それらを `Screen` として
+   - Incorrect: それらを`Screen`として
+   - Exception: Do NOT add space after Japanese punctuation `、` or `。`
+   - Correct: まず、`$DISPLAY` 環境変数は
+   - Incorrect: まず、 `$DISPLAY` 環境変数は
+
+5. **Bold text**: Do NOT use bold `**text**` in blog posts
+   - Use plain text or headings instead
+
+6. **Question marks**: Use half-width `?` for questions
+   - Correct: どういうこと?なんで?
+   - Incorrect: どういうこと？なんで？
+
+7. **Japanese punctuation**: Do NOT add space after `、` or `。`
+   - Correct: まず、`code` は
+   - Incorrect: まず、 `code` は
+
+### Frontmatter Template
+
 ```markdown
 ---
 author: Daiki Matsui

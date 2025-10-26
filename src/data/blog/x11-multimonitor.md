@@ -49,28 +49,22 @@ screen, display などの用語を理解するには、[Xlib - C Language X Inte
 
 ### screen
 
-```
-A screen is a physical monitor and hardware that can be color, grayscale, or monochrome.
-```
+> A screen is a physical monitor and hardware that can be color, grayscale, or monochrome.
 
 screen は、物理的なモニターのことです。たとえば私の環境だと、ThinkPadのモニターとLGの外部モニターを使って、ブログを書いています。それぞれがscreenに対応します。
 
 ### display
 
-```
-A set of screens for a single user with one keyboard and one pointer (usually a mouse) is called a display.
-```
+> A set of screens for a single user with one keyboard and one pointer (usually a mouse) is called a display.
 
 キーボードとマウス + 物理モニターをまとめて display と定義しているようです。普通、ディスプレイといったらモニターを想像すると思うので、注意が必要です。
 
 ### display_name
 
-```
-Specifies the hardware display name, which determines the display and communications domain to be used. On a POSIX-conformant system, if the display_name is NULL, it defaults to the value of the DISPLAY environment variable.
-...
-On POSIX-conformant systems, the display name or DISPLAY environment variable can be a string in the format:
-	protocol/hostname:number.screen_number
-```
+> Specifies the hardware display name, which determines the display and communications domain to be used. On a POSIX-conformant system, if the display_name is NULL, it defaults to the value of the DISPLAY environment variable.
+> ...
+> On POSIX-conformant systems, the display name or DISPLAY environment variable can be a string in the format:
+> 	protocol/hostname:number.screen_number
 
 display_name は、`protocol/hostname:number.screen_number` という形式のようです。`NULL` の場合に `DISPLAY` 環境変数が使われるというのは、x11rbの実装と一緒でした。
 
@@ -107,17 +101,13 @@ X11におけるマルチモニターの話は、[freedesktop.orgの記事](https
 
 Xlibの仕様によると、screenは独自のroot windowを持ちます。
 
-```
-All the windows in an X server are arranged in strict hierarchies. At the top of each hierarchy is a root window, which covers each of the display screens.
-```
+> All the windows in an X server are arranged in strict hierarchies. At the top of each hierarchy is a root window, which covers each of the display screens.
 
 ウィンドウは `CreateWindow` で生成する際に、親ウィンドウを指定します。このとき、ウィンドウは特定のscreenのroot windowの配下に作られるため、生成された瞬間にそのscreenに所属することになります。
 
 ウィンドウの親を変更する `ReparentWindow` リクエストには、[X11 Protocolの仕様](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html)で以下のような制限があります。
 
-```
-A Match error is generated if: The new parent is not on the same screen as the old parent.
-```
+> A Match error is generated if: The new parent is not on the same screen as the old parent.
 
 つまり、screen間でウィンドウの親を変更することはプロトコルレベルで禁止されていました。ラップトップのモニター (`:0.0`) で開いたウィンドウを、外部モニター (`:0.1`) に移動させることができないということです。現代のマルチモニター環境で考えてみると、けっこう不便です。
 
@@ -141,18 +131,14 @@ Xineramaは画期的でしたが問題がありました。設定が静的で、
 
 RandR は元々、画面のリサイズと回転のために開発されました。[freedesktop.orgの記事](https://nouveau.freedesktop.org/MultiMonitorDesktop.html)によると、Version 1.2 でマルチモニター対応が追加され、Xineramaと同じように、複数のモニターを1つのスクリーンとして扱えるようになりました。
 
-```
-Randr exposes the dual-head card as a single SCREEN, yet having a standard way of managing the multiple monitors.
-```
+> Randr exposes the dual-head card as a single SCREEN, yet having a standard way of managing the multiple monitors.
 
 さらに、[X11R7.3のリリースノート](https://www.x.org/archive/X11R7.3/doc/RELNOTES.txt)によると、
 
-```
-Also new in the X Server since X11R7.2 is the 1.2 version of the RandR
-extension, which allows for runtime configuration of outputs within X Screens
-and an improved static configuration system for multihead in a RandR 1.2
-environment.
-```
+> Also new in the X Server since X11R7.2 is the 1.2 version of the RandR
+> extension, which allows for runtime configuration of outputs within X Screens
+> and an improved static configuration system for multihead in a RandR 1.2
+> environment.
 
 とあり、1.2でruntime configurationに対応したことがわかります。
 

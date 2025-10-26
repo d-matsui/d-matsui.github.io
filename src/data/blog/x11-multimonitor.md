@@ -4,7 +4,7 @@ pubDatetime: 2025-10-23T10:00:00Z
 title: "X11におけるマルチモニターの仕組み"
 slug: x11-multimonitor
 featured: true
-draft: true
+draft: false
 tags:
   - X11
   - Linux

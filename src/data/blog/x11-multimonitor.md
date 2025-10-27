@@ -64,7 +64,7 @@ screen は、物理的なモニターのことです。たとえば私の環境�
 > Specifies the hardware display name, which determines the display and communications domain to be used. On a POSIX-conformant system, if the display_name is NULL, it defaults to the value of the DISPLAY environment variable.
 > ...
 > On POSIX-conformant systems, the display name or DISPLAY environment variable can be a string in the format:
-> 	protocol/hostname:number.screen_number
+> protocol/hostname:number.screen_number
 
 display_name は、`protocol/hostname:number.screen_number` という形式のようです。`NULL` の場合に `DISPLAY` 環境変数が使われるというのは、x11rbの実装と一緒でした。
 

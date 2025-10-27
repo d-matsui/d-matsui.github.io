@@ -1,0 +1,49 @@
+<svg width="700" height="250" xmlns="http://www.w3.org/2000/svg">
+    <!-- Display label (top) -->
+    <text x="350" y="24" font-size="24" font-weight="bold" text-anchor="middle" fill="#424242">Display</text>
+
+    <!-- Display (outer box) -->
+    <rect x="10" y="40" width="680" height="200" fill="#fafafa" stroke="#424242" stroke-width="4" rx="8"/>
+
+    <!-- Screen 0 area (Laptop - Main) -->
+    <g>
+        <!-- Screen 0 box -->
+        <rect x="30" y="60" width="200" height="151" fill="#e3f2fd" stroke="#1976d2" stroke-width="3" rx="5"/>
+
+        <!-- Screen 0 label -->
+        <rect x="70" y="49" width="85" height="26" fill="#1976d2" rx="4"/>
+        <text x="112" y="67" font-size="17" font-weight="bold" text-anchor="middle" fill="white">Screen 0</text>
+
+        <!-- Laptop icon and text -->
+        <text x="130" y="125" font-size="56" text-anchor="middle">💻</text>
+        <text x="130" y="196" font-size="17" text-anchor="middle">ラップトップ</text>
+    </g>
+
+    <!-- Screen 1 area (Sub Monitor) -->
+    <g>
+        <!-- Screen 1 box -->
+        <rect x="240" y="60" width="200" height="151" fill="#e3f2fd" stroke="#1976d2" stroke-width="3" rx="5"/>
+
+        <!-- Screen 1 label -->
+        <rect x="280" y="49" width="85" height="26" fill="#1976d2" rx="4"/>
+        <text x="322" y="67" font-size="17" font-weight="bold" text-anchor="middle" fill="white">Screen 1</text>
+
+        <!-- Sub Monitor icon and text -->
+        <text x="340" y="125" font-size="56" text-anchor="middle">🖥️</text>
+        <text x="340" y="196" font-size="17" text-anchor="middle">モニター</text>
+    </g>
+
+    <!-- Keyboard (part of Display, not Screen) -->
+    <g>
+        <rect x="456" y="60" width="210" height="73" fill="#fff3e0" stroke="#f57c00" stroke-width="2" rx="4"/>
+        <text x="561" y="90" font-size="36" text-anchor="middle">⌨️</text>
+        <text x="561" y="120" font-size="17" text-anchor="middle">キーボード</text>
+    </g>
+
+    <!-- Mouse (part of Display, not Screen) -->
+    <g>
+        <rect x="456" y="140" width="210" height="73" fill="#fff3e0" stroke="#f57c00" stroke-width="2" rx="4"/>
+        <text x="561" y="172" font-size="36" text-anchor="middle">🖱️</text>
+        <text x="561" y="203" font-size="17" text-anchor="middle">マウス</text>
+    </g>
+</svg>

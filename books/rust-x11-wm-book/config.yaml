@@ -1,0 +1,7 @@
+title: "Rustで実装するX11 Window Manager自作入門"
+summary: "RustでX11の仕組みを学びながら、タイル型Window Managerをゼロから実装する本です。"
+topics: ["Rust", "X11", "Linux", "自作", "入門"]
+published: true
+price: 0
+chapters:
+  - introduction.md

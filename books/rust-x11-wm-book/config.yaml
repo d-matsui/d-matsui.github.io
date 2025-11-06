@@ -4,4 +4,4 @@ topics: ["Rust", "X11", "Linux", "自作", "入門"]
 published: true
 price: 0
 chapters:
-  - introduction.md
+  - introduction

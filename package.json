@@ -48,6 +48,6 @@
     "prettier-plugin-tailwindcss": "^0.6.13",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.36.0",
-    "zenn-cli": "^0.2.8"
+    "zenn-cli": "^0.2.10"
   }
 }

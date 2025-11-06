@@ -63,7 +63,7 @@
   - 図を挿入
     - クライアント（アプリ群、WM）とサーバー（画面・デバイス管理）の関係
 
-### [x] ウィンドウの階層構造 (display, screen, root-window)
+### [x] Display, Screen, Windowの概念
 
 <!-- 読者がこのセクションを読み終えたとき -->
 <!-- - display, screen, root-window の定義を理解している -->
@@ -92,7 +92,7 @@
 - 図を挿入
   - display, screen, root window, windows の関係
 
-### [x] SubstructureRedirect と SubstructureNotify の仕組み
+### [x] Window Managerとは
 
 <!-- 読者がこのセクションを読み終えたとき -->
 <!-- - SubstructureRedirect と SubstructureNotify という概念を理解している -->

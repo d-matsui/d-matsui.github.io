@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 250">
+  <defs>
+    <style>
+      .box { fill: #e8f4f8; stroke: #2c3e50; stroke-width: 2; }
+      .server-box { fill: #e8f4f8; stroke: #2c3e50; stroke-width: 2; }
+      .text-main { font-family: sans-serif; font-size: 16px; text-anchor: middle; fill: #2c3e50; dominant-baseline: middle; }
+      .text-sub { font-family: sans-serif; font-size: 14px; text-anchor: middle; fill: #666; dominant-baseline: middle; }
+      .arrow { stroke: #2c3e50; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .text-label { font-family: sans-serif; font-size: 13px; text-anchor: middle; fill: #c00; dominant-baseline: middle; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#2c3e50" />
+    </marker>
+  </defs>
+
+  <!-- クライアント層 -->
+  <rect x="130" y="30" width="180" height="60" class="box" rx="5" />
+  <text x="220" y="60" class="text-main">Xクライアント</text>
+
+  <rect x="390" y="30" width="180" height="60" class="box" rx="5" />
+  <text x="480" y="60" class="text-main">Window Manager</text>
+
+  <!-- サーバー層 -->
+  <rect x="50" y="150" width="600" height="60" class="server-box" rx="5" />
+  <text x="350" y="180" class="text-main">Xサーバー</text>
+
+  <!-- 矢印: リクエストの流れ -->
+  <!-- 1. クライアント → サーバー -->
+  <path d="M 220 90 L 220 150" class="arrow" />
+  <text x="145" y="120" class="text-label">1. ウィンドウ作成要求</text>
+
+  <!-- 2. サーバー → WM -->
+  <path d="M 470 150 L 470 90" class="arrow" />
+  <text x="400" y="120" class="text-label">2. WMへリダイレクト</text>
+
+  <!-- 3. WM → サーバー -->
+  <path d="M 490 90 L 490 150" class="arrow" />
+  <text x="565" y="120" class="text-label">3. 配置決定後リクエスト</text>
+</svg>

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 220">
+  <defs>
+    <style>
+      .display-box { fill: none; stroke: #2c3e50; stroke-width: 3; stroke-dasharray: 10,5; }
+      .screen-box { fill: #e8f4f8; stroke: #2c3e50; stroke-width: 2; }
+      .device-box { fill: #e8f4f8; stroke: #2c3e50; stroke-width: 2; }
+      .text-main { font-family: sans-serif; font-size: 16px; text-anchor: middle; fill: #2c3e50; dominant-baseline: middle; }
+      .text-label { font-family: sans-serif; font-size: 18px; font-weight: bold; text-anchor: middle; fill: #2c3e50; dominant-baseline: middle; }
+      .text-sub { font-family: sans-serif; font-size: 14px; text-anchor: middle; fill: #666; dominant-baseline: middle; }
+    </style>
+  </defs>
+
+  <!-- Display枠 -->
+  <rect x="20" y="35" width="440" height="170" class="display-box" rx="10" />
+  <text x="240" y="20" class="text-label">display</text>
+
+  <!-- Screen (物理モニター) -->
+  <rect x="40" y="55" width="220" height="130" class="screen-box" rx="5" />
+  <text x="150" y="110" class="text-main">物理モニター</text>
+  <text x="150" y="130" class="text-sub">screen</text>
+
+  <!-- マウス -->
+  <rect x="300" y="65" width="140" height="45" class="device-box" rx="5" />
+  <text x="370" y="87.5" class="text-main">マウス</text>
+
+  <!-- キーボード -->
+  <rect x="300" y="130" width="140" height="45" class="device-box" rx="5" />
+  <text x="370" y="152.5" class="text-main">キーボード</text>
+</svg>

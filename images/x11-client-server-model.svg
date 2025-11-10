@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 400">
+  <!-- Define styles -->
+  <defs>
+    <style>
+      .box { fill: #e8f4f8; stroke: #2c3e50; stroke-width: 2; }
+      .text-main { font-family: sans-serif; font-size: 16px; text-anchor: middle; fill: #2c3e50; dominant-baseline: middle; }
+      .text-sub { font-family: sans-serif; font-size: 14px; text-anchor: middle; fill: #2c3e50; dominant-baseline: middle; }
+      .arrow { stroke: #2c3e50; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .arrow-bidirectional { stroke: #2c3e50; stroke-width: 2; fill: none; marker-start: url(#arrowhead-start); marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#2c3e50" />
+    </marker>
+    <marker id="arrowhead-start" markerWidth="10" markerHeight="10" refX="1" refY="3" orient="auto">
+      <polygon points="10 0, 0 3, 10 6" fill="#2c3e50" />
+    </marker>
+  </defs>
+
+  <!-- Top row: Clients -->
+  <rect x="130" y="30" width="180" height="60" class="box" rx="5" />
+  <text x="220" y="52" class="text-main">Xクライアント</text>
+  <text x="220" y="72" class="text-sub">(ターミナル)</text>
+
+  <rect x="390" y="30" width="180" height="60" class="box" rx="5" />
+  <text x="480" y="52" class="text-main">Xクライアント</text>
+  <text x="480" y="72" class="text-sub">(ブラウザ)</text>
+
+  <!-- Middle row: Server -->
+  <rect x="50" y="150" width="600" height="60" class="box" rx="5" />
+  <text x="350" y="172" class="text-main">Xサーバー</text>
+  <text x="350" y="192" class="text-sub">(Xorg)</text>
+
+  <!-- Bottom row: Hardware -->
+  <rect x="50" y="270" width="150" height="60" class="box" rx="5" />
+  <text x="125" y="300" class="text-main">マウス</text>
+
+  <rect x="275" y="270" width="150" height="60" class="box" rx="5" />
+  <text x="350" y="300" class="text-main">キーボード</text>
+
+  <rect x="500" y="270" width="150" height="60" class="box" rx="5" />
+  <text x="575" y="300" class="text-main">物理モニター</text>
+
+  <!-- Arrows: Clients <-> Server (vertical, split into 2 arrows each) -->
+  <!-- Client1 -> Server -->
+  <path d="M 210 90 L 210 150" class="arrow" />
+  <!-- Server -> Client1 -->
+  <path d="M 230 150 L 230 90" class="arrow" />
+
+  <!-- Client2 -> Server -->
+  <path d="M 470 90 L 470 150" class="arrow" />
+  <!-- Server -> Client2 -->
+  <path d="M 490 150 L 490 90" class="arrow" />
+
+  <!-- Arrows: Hardware -> Server (vertical) -->
+  <path d="M 125 270 L 125 210" class="arrow" />
+  <path d="M 350 270 L 350 210" class="arrow" />
+
+  <!-- Arrow: Server -> Monitor (vertical) -->
+  <path d="M 575 210 L 575 270" class="arrow" />
+</svg>

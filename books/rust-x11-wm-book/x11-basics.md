@@ -1,5 +1,5 @@
 ---
-title: "X Window Systemの基礎知識"
+title: "X Window System の基礎知識"
 ---
 
 ## X Window System
@@ -64,7 +64,7 @@ Window Manager は、X サーバーが他のクライアントから受け取っ
 
 例えば、ターミナルを起動すると、ターミナルは X サーバーにウィンドウ作成リクエストを送ります。Window Manager が存在しない場合、X サーバーはリクエスト通りに表示します。しかし、Window Manager が存在する場合、X サーバーはリクエストを Window Manager にリダイレクトします。Window Manager がリクエストを処理し、改めて X サーバーにリクエストすることで、タイル型レイアウトなどの配置を実現できます。
 
-Window Manager は、SubstructureRedirect を使うことで、このリダイレクトを実現します。
+このようなリダイレクトは、SubstructureRedirect という仕組みによって実現されています。Window Manager は root window に SubstructureRedirect を設定することで、X サーバーからウィンドウ作成リクエストを受け取ります。
 
 ![SubstructureRedirect の動作](/images/x11-substructure-redirect.png)
 

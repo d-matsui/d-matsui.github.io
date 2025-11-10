@@ -1,14 +1,14 @@
 ---
 author: Daiki Matsui
-pubDatetime: 2025-11-10T18:00:00Z
-title: 昔わからなかったことを、今なら理解できるかもしれない
+pubDatetime: 2025-11-10T14:28:00Z
+title: 今なら理解できるかもしれないこと
 slug: revisiting-old-topics
 featured: true
 draft: false
 tags:
   - essay
   - learning
-description: 昔勉強したけど結局よくわからなかったことを、時間ができたときに改めて調べ直す事を始めた話
+description: 昔勉強したけどよくわからなかったことを、時間ができたときに改めて調べ直す事を始めた話
 ---
 
 ## はじめに

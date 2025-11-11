@@ -6,8 +6,8 @@ price: 0
 chapters:
   - introduction
   - x11-basics
-  - setup
-  - minimal-wm
-  - tiling-layout
-  - key-handling
-  - next-steps
+  # - setup
+  # - minimal-wm
+  # - tiling-layout
+  # - key-handling
+  # - next-steps

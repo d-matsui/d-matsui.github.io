@@ -151,7 +151,51 @@
 - X11 Protocol, Xlib Programming Manual, Xlib C Programming Interface, ICCCM, EWEHなどのリファレンスを紹介する
 # [x] 第1章を執筆する
 
-# [ ] 第2章を執筆する
+# [x] 第2章を執筆する
+## はじめに
+
+- この章のゴール: Xephyr上でrwmを動かし、xtermを表示する
+- 動作確認済み環境(Ubuntu 24.04など)
+
+## 必要なツールのインストール
+
+- sudo apt install xserver-xephyr
+- sudo apt install xterm(または他のテスト用Xアプリ)
+
+## Rustプロジェクトのセットアップ
+
+- cargo new rwm
+- cargo add x11rb anyhow tracing tracing-subscriber
+- Cargo.tomlの確認
+
+## Xephyrの動作確認
+
+- Xephyrとは何か(ネストされたXサーバー)
+- Xephyr :10 -screen 1280x720で起動
+- 別ターミナルからDISPLAY=:10 xtermで接続確認
+- $DISPLAYの役割
+- フォーマット: [hostname]:displaynumber[.screennumber]
+- 例: :0, :10, localhost:10.1
+- なぜ:10を使うか
+
+## Xサーバーへの接続
+
+- x11rb::connect(None)のコード
+- Noneの意味($DISPLAYを使う)
+- screen_numの意味(デフォルトscreen番号)
+- ログ出力の確認
+
+## 動作確認スクリプト
+
+- test.shの全体像
+- 各コマンドの説明(Xephyr起動、rwm起動、xterm起動)
+- スクリーンショット
+- 期待される結果
+
+## まとめ
+
+- この章で達成したこと
+- 次章の予告(最小限のWM実装)
 
 # 第3章を執筆する
 

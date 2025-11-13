@@ -28,7 +28,7 @@ X クライアントは、ターミナルやブラウザなどのアプリケー
 
 クライアントとサーバーは、[X11 Protocol](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html) に従って通信します。
 
-X11 のアプリケーション開発では、X11 Protocol を使いやすくするライブラリが使われます。C 言語では XCB や Xlib が使われます。本書では、Rust 向けのライブラリである [x11rb](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html) を使用します。
+X11 のアプリケーション開発では、X11 Protocol を使いやすくするライブラリが使われます。C 言語では `XCB` や `Xlib` が使われます。本書では、Rust 向けのライブラリである [`x11rb`](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html) を使用します。
 
 ## Screen, Display, Window の概念
 

@@ -18,12 +18,12 @@ Window Manager は、X サーバーからリダイレクトされたウィンド
 
 Window Manager が、ウィンドウ操作に関するイベントを受け取るためには、root window に対して SubstructureRedirect と SubstructureNotify のイベントマスクを設定する必要があります。
 
-イベントマスクは、クライアントが特定のウィンドウについてどのイベントに関心があるかを指定するもの (ビット列) です。例えば、あるウィンドウに `KeyPress` マスクを設定すると、そのウィンドウでのキー入力をイベントとして受け取れます。
+イベントマスクは、クライアントが特定のウィンドウについてどのイベントに関心があるかを指定するもの (ビット列) です。例えば、あるウィンドウに KeyPress マスクを設定すると、そのウィンドウでのキー入力をイベントとして受け取れます。
 
 Window Manager の観点では、特に以下の 2 つのイベントマスクが重要です。
 
-- `SubstructureRedirect`: root window 配下のウィンドウで発生したリクエスト (ウィンドウの作成、サイズ変更など) を Window Manager にリダイレクトします
-- `SubstructureNotify`: root window 配下のウィンドウで発生した Notify (ウィンドウの非表示、削除など) を Window Manager に通知します
+- SubstructureRedirect: root window 配下のウィンドウで発生したリクエスト (ウィンドウの作成、サイズ変更など) を Window Manager にリダイレクトします
+- SubstructureNotify: root window 配下のウィンドウで発生した Notify (ウィンドウの非表示、削除など) を Window Manager に通知します
 
 :::message
 イベントマスクには他にも KeyPress (キー入力)、ButtonPress (マウスクリック)、EnterWindow (ポインタの出入り) など、様々な種類があります。全てのイベントマスクは [X11 Protocol の Common Types](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#events) で定義されています。

@@ -92,6 +92,26 @@ When writing or editing blog posts in Japanese, follow these style rules:
    - Correct: まず、`code` は
    - Incorrect: まず、 `code` は
 
+8. **Backtick usage**: Use backticks only for code elements, not for concepts
+   - **USE backticks for:**
+     - Code elements: function names (`wait_for_event()`), variable names (`event_mask`), type names (`EventMask`), method names (`check()`)
+     - Library names: `x11rb`, `XCB`, `Xlib`, `anyhow`, `tracing`
+     - File paths and commands: `test.sh`, `src/main.rs`, `cargo build`
+     - Constants and enum values: `SUBSTRUCTURE_REDIRECT`, `None`, `true`
+     - Environment variables: `$DISPLAY`, `$HOME`
+     - Programming keywords: `let`, `fn`, `struct`
+   - **DO NOT use backticks for:**
+     - Concepts and terminology: Window Manager, root window, イベントループ
+     - Specification/protocol names: X11 Protocol, X Window System
+     - Event/mask names when explaining conceptually: SubstructureRedirect は〜という仕組み, MapRequest はウィンドウを表示しようとしたときに発生するイベント
+     - General technical concepts: イベント駆動, リダイレクト, バッファ
+   - **Rule of thumb**: "Does it appear directly in code?" → Use backticks. "Am I explaining a concept?" → No backticks.
+   - **Examples:**
+     - ✅ `Event::MapRequest(e)` のパターンマッチ (code usage)
+     - ✅ `x11rb` ライブラリを使用します (library name)
+     - ❌ MapRequest は、クライアントがウィンドウを表示しようとしたときに発生するイベントです (conceptual explanation)
+     - ❌ SubstructureRedirect という仕組みによって実現されています (conceptual explanation)
+
 ### Frontmatter Template
 
 ```markdown

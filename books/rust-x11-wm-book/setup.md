@@ -49,8 +49,8 @@ cargo new rwm
 cd rwm
 ```
 
-X11 のライブラリは x11rb を使用します。
-加えて、エラーハンドリング用の anyhow、ロギング用の tracing と tracing-subscriber も追加します。
+X11 のライブラリは `x11rb` を使用します。
+加えて、エラーハンドリング用の `anyhow`、ロギング用の `tracing` と `tracing-subscriber` も追加します。
 
 ```bash
 cargo add x11rb anyhow tracing tracing-subscriber

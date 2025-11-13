@@ -1,22 +1,22 @@
 ---
-title: "最小限のウィンドウマネージャー"
+title: "シンプルなウィンドウマネージャー"
 ---
 
 ## はじめに
 
-この章では、最小限の Window Manager を実装します。具体的には、X サーバーからリダイレクトされた xterm のウィンドウ作成リクエストを受け取り、そのまま X サーバーに転送することで、Window Manager 経由でウィンドウを表示させることをゴールにします。
+この章では、Window Manager の基本的な仕組みを理解し、実装します。
 
-これまで、第 1 章で SubstructureRedirect の仕組みを学び、第 2 章で X サーバーへの接続を実装しました。この章では、それらの知識を使って実際に Window Manager として動作するコードを書いていきます。
+Window Manager は、X サーバーからリダイレクトされたウィンドウ操作に関するリクエストを処理する X11 のクライアントです。この章では、イベント駆動型の Window Manager を実装することで、以下を学びます。
 
-この章で実装する機能は以下の通りです。
+- Window Manager がどのようにイベントを受け取るか (SubstructureRedirect/Notify)
+- イベントループによる継続的な処理の仕組み
+- 基本的なイベント (MapRequest, ConfigureRequest, UnmapNotify) の役割と処理方法
 
-- Window Manager の初期化 (SubstructureRedirect/SubstructureNotify マスクの設定)
-- イベントループの実装
-- 基本的なイベント (MapRequest, UnmapNotify, ConfigureRequest) のハンドリング
+第 1 章で学んだ SubstructureRedirect の仕組みと、第 2 章で実装した X サーバーへの接続を組み合わせて、実際に動作する Window Manager を作成します。
 
 ## Window Manager の初期化
 
-Window Manager として動作させるには、root window に対して SubstructureRedirect と SubstructureNotify のイベントマスクを設定する必要があります。
+Window Manager が、ウィンドウ操作に関するイベントを受け取るためには、root window に対して SubstructureRedirect と SubstructureNotify のイベントマスクを設定する必要があります。
 
 イベントマスクは、クライアントが特定のウィンドウについてどのイベントに関心があるかを指定するもの (ビット列) です。例えば、あるウィンドウに `KeyPress` マスクを設定すると、そのウィンドウでのキー入力をイベントとして受け取れます。
 
@@ -67,7 +67,7 @@ fn main() -> Result<()> {
     let (conn, screen_num) = x11rb::connect(None)?;
     info!("Connected to X server with screen {:?}", screen_num);
 
-    let wm = WindowManager::new(conn, screen_num);
+    let wm = WindowManager::new(conn, screen_num)?;
 
     Ok(())
 }
@@ -79,7 +79,7 @@ fn main() -> Result<()> {
 2. `WindowManager::new()` を呼び出して Window Manager を初期化
 3. `new()` 内で root window に対してイベントマスクを設定
 
-重要なポイントは、`new()` メソッドの中の `change_window_attributes` で root window に対して、これら 2 つのイベントマスクを設定している部分です (53-56行目)。
+重要なポイントは、`new()` メソッドの中の `change_window_attributes` で root window に対して SubstructureRedirect と SubstructureNotify の 2 つのイベントマスクを設定している部分です (53-56行目)。
 
 ```rust
 let event_mask = EventMask::SUBSTRUCTURE_REDIRECT | EventMask::SUBSTRUCTURE_NOTIFY;
@@ -88,7 +88,7 @@ conn.change_window_attributes(screen.root, &change)?
     .check()?;
 ```
 
-これらのイベントマスクは、第 1 章で学んだように、同時に 1 つのクライアントしか設定できません。もし既に別の Window Manager が動作している場合、`change_window_attributes` はエラーを返します。
+これらのイベントマスクは、第 1 章で学んだように、同時に 1 つのクライアントしか設定できません。既に別の Window Manager が動作している場合、`change_window_attributes` はエラーを返します。
 
 ## イベントループの実装
 
@@ -100,7 +100,7 @@ Window Manager は、X サーバーからイベントを受け取り続け、各
 - ConfigureRequest: サイズ・位置変更リクエスト (SubstructureRedirect)
 - UnmapNotify: ウィンドウの非表示通知 (SubstructureNotify)
 
-イベントループを、以下の流れで実装します。
+イベントループは、以下の流れで実装します。
 
 1. `wait_for_event()` でイベントを待機
 2. イベントを受け取ったら `handle_event()` で処理
@@ -143,7 +143,7 @@ X11 では、クライアントからのリクエストは出力バッファに�
 
 ## 基本的なイベントのハンドリング
 
-Window Manager が最低限動作するためには、MapRequest、UnmapNotify、ConfigureRequest の 3 つのイベントを処理する必要があります。
+この章で実装する Window Manager は、クライアントからのリクエストに応じてウィンドウのサイズや位置を設定し、表示し、ウィンドウが非表示になったことを検知します。そのために、ConfigureRequest (サイズ・位置設定)、MapRequest (表示)、UnmapNotify (非表示通知) の 3 つのイベントを処理します。
 
 ### 主要なイベント一覧
 
@@ -194,7 +194,7 @@ fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
 }
 ```
 
-`map_window()` を呼び出してウィンドウを表示しています。先程と同様、クライアントからのリクエストをそのまま X サーバーに転送しています。
+`map_window()` を呼び出してウィンドウを表示しています。ConfigureRequest と同様、クライアントからのリクエストをそのまま X サーバーに転送しています。
 
 ### UnmapNotify
 
@@ -345,15 +345,15 @@ fn main() -> Result<()> {
 
 ## まとめ
 
-この章では、最小限の Window Manager を実装しました。
+この章では、シンプルな Window Manager を実装しました。
 
-具体的には、下記の機能を持つWindow Managerを実装しました。
+具体的には、下記の機能を持つ Window Manager を実装しました。
 - Window Manager の初期化 (SubstructureRedirect/SubstructureNotify マスクの設定)
 - イベントループの実装
 - 基本的なイベント (MapRequest, UnmapNotify, ConfigureRequest) の処理
 
 
-しかし、最小限なので、制限もあります。具体的には、
+しかし、この段階では制限もあります。具体的には以下の通りです。
 - ウィンドウは単に表示されるだけで、レイアウト管理はしていない
 - 複数のウィンドウを管理する仕組みがない
 - キーボード操作はまだサポートしていない

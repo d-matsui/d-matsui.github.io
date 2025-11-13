@@ -175,4 +175,4 @@ chmod +x test.sh
 - `$DISPLAY` 環境変数とそのフォーマットを理解した
 - Xephyr 上で rwm と xterm を動作させた
 
-次の章では、最小限の Window Manager を実装していきます。
+次の章では、シンプルな Window Manager を実装していきます。

@@ -26,7 +26,7 @@ Window Manager の観点では、特に以下の 2 つのイベントマスク�
 - SubstructureNotify: root window 配下のウィンドウで発生した Notify (ウィンドウの非表示、削除など) を Window Manager に通知します
 
 :::message
-イベントマスクには他にも KeyPress (キー入力)、ButtonPress (マウスクリック)、EnterWindow (ポインタの出入り) など、様々な種類があります。全てのイベントマスクは [X11 Protocol の Common Types](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#events) で定義されています。
+イベントマスクには他にも KeyPress (キー入力)、ButtonPress (マウスクリック)、EnterWindow (ポインタの出入り) など、様々な種類があります。全てのイベントマスクは [X11 Protocol の Common Types](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Common_Types) で定義されています。
 :::
 
 それでは、SubstructureRedirect と SubstructureNotify のマスクを設定するコードを実装しましょう。

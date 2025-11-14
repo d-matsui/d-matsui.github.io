@@ -6,10 +6,9 @@ title: "シンプルなウィンドウマネージャー"
 
 この章では、Window Manager の基本的な仕組みを理解し、実装します。
 
-Window Manager は、X サーバーからリダイレクトされたウィンドウ操作に関するリクエストを処理する X11 のクライアントです。この章では、イベント駆動型の Window Manager を実装することで、以下を学びます。
+Window Manager は、X サーバーからリダイレクトされたウィンドウ操作に関するリクエストを処理する X11 のクライアントと言えます。この章では、シンプルな Window Manager を実装することで、以下を学びます。
 
-- Window Manager がどのようにイベントを受け取るか (SubstructureRedirect/Notify)
-- イベントループによる継続的な処理の仕組み
+- Window Manager がどのようにイベントを受け取るか
 - 基本的なイベント (MapRequest, ConfigureRequest, UnmapNotify) の役割と処理方法
 
 第 1 章で学んだ SubstructureRedirect の仕組みと、第 2 章で実装した X サーバーへの接続を組み合わせて、実際に動作する Window Manager を作成します。
@@ -20,16 +19,18 @@ Window Manager が、ウィンドウ操作に関するイベントを受け取�
 
 イベントマスクは、クライアントが特定のウィンドウについてどのイベントに関心があるかを指定するもの (ビット列) です。例えば、あるウィンドウに KeyPress マスクを設定すると、そのウィンドウでのキー入力をイベントとして受け取れます。
 
-Window Manager の観点では、特に以下の 2 つのイベントマスクが重要です。
+Window Manager の観点では、以下の 2 つのイベントマスクが重要です。
 
-- SubstructureRedirect: root window 配下のウィンドウで発生したリクエスト (ウィンドウの作成、サイズ変更など) を Window Manager にリダイレクトします
-- SubstructureNotify: root window 配下のウィンドウで発生した Notify (ウィンドウの非表示、削除など) を Window Manager に通知します
+- SubstructureRedirect: あるウィンドウ (及びその配下) で発生したリクエスト (ウィンドウの作成、サイズ変更など) を Window Manager にリダイレクトします
+- SubstructureNotify: あるウィンドウ (及びその配下) で発生した Notify (ウィンドウの非表示、削除など) を Window Manager に通知します
+
+これらのイベントマスクを root window に設定することで、Window Manager はウィンドウ管理に必要なイベントをサーバーから取得します。
 
 :::message
 イベントマスクには他にも KeyPress (キー入力)、ButtonPress (マウスクリック)、EnterWindow (ポインタの出入り) など、様々な種類があります。全てのイベントマスクは [X11 Protocol の Common Types](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Common_Types) で定義されています。
 :::
 
-それでは、SubstructureRedirect と SubstructureNotify のマスクを設定するコードを実装しましょう。
+それでは、SubstructureRedirect と SubstructureNotify を root window に設定するコードを実装しましょう。
 
 ```rust
 use anyhow::Result;
@@ -79,7 +80,7 @@ fn main() -> Result<()> {
 2. `WindowManager::new()` を呼び出して Window Manager を初期化
 3. `new()` 内で root window に対してイベントマスクを設定
 
-重要なポイントは、`new()` メソッドの中の `change_window_attributes` で root window に対して SubstructureRedirect と SubstructureNotify の 2 つのイベントマスクを設定している部分です (53-56行目)。
+重要なポイントは、`new()` メソッドの中の `change_window_attributes` です。 root window に対して SubstructureRedirect と SubstructureNotify の 2 つのイベントマスクを設定している部分です。
 
 ```rust
 let event_mask = EventMask::SUBSTRUCTURE_REDIRECT | EventMask::SUBSTRUCTURE_NOTIFY;
@@ -92,15 +93,13 @@ conn.change_window_attributes(screen.root, &change)?
 
 ## イベントループの実装
 
-Window Manager は、X サーバーからイベントを受け取り続け、各イベントに応じて処理を行うプログラムです。
-
 前のセクションで設定した SubstructureRedirect/Notify マスクにより、Window Manager は以下のようなイベントを受け取れるようになります。
 
-- MapRequest: ウィンドウの表示リクエスト (SubstructureRedirect)
-- ConfigureRequest: サイズ・位置変更リクエスト (SubstructureRedirect)
-- UnmapNotify: ウィンドウの非表示通知 (SubstructureNotify)
+- MapRequest: ウィンドウの表示リクエスト
+- ConfigureRequest: サイズ・位置変更リクエスト
+- UnmapNotify: ウィンドウの非表示通知
 
-イベントループは、以下の流れで実装します。
+イベントループを、以下の流れで実装します。
 
 1. `wait_for_event()` でイベントを待機
 2. イベントを受け取ったら `handle_event()` で処理
@@ -132,9 +131,7 @@ fn handle_event(&mut self, event: &Event) -> Result<()> {
 }
 ```
 
-`wait_for_event()` は、イベントが発生するまでブロックします。イベントが発生したら、`handle_event()` でイベントの種類に応じて適切なハンドラーメソッドを呼び出します。
-
-`flush()` について補足します。
+`wait_for_event()` は、イベントが発生するまでブロックします。イベントが発生したら、`handle_event()` でイベントの種類に応じて適切な処理を呼び出します。
 
 X11 では、クライアントからのリクエストは出力バッファに一旦保存され、まとめて送信されます。`flush()` を呼び出すことで、バッファに溜まったリクエストを X サーバーに送信できます。
 
@@ -143,23 +140,19 @@ X11 では、クライアントからのリクエストは出力バッファに�
 
 ## 基本的なイベントのハンドリング
 
-この章で実装する Window Manager は、クライアントからのリクエストに応じてウィンドウのサイズや位置を設定し、表示し、ウィンドウが非表示になったことを検知します。そのために、ConfigureRequest (サイズ・位置設定)、MapRequest (表示)、UnmapNotify (非表示通知) の 3 つのイベントを処理します。
+この章で実装する Window Manager は、クライアントからのリクエストに応じてウィンドウのサイズや位置を設定・表示し、ウィンドウが非表示になったことを検知するシンプルなものです。この機能を実装するために、ConfigureRequest (サイズ・位置設定)、MapRequest (表示)、UnmapNotify (非表示通知) の 3 つのイベントを処理します。
 
-### 主要なイベント一覧
-
-X11 には多くのイベントが存在しますが、この章では以下の 3 つのイベントを扱います。
-
-| イベント | 説明 | この章での扱い |
-|---------|------|--------------|
-| ConfigureRequest | クライアントがウィンドウのサイズや位置を変更しようとした | 処理する |
-| MapRequest | クライアントがウィンドウを表示しようとした | 処理する |
-| UnmapNotify | ウィンドウが非表示になった | 処理する (ログ出力のみ) |
+| イベント | 説明 |
+|---------|------|
+| ConfigureRequest | クライアントがウィンドウのサイズや位置を変更しようとした |
+| MapRequest | クライアントがウィンドウを表示しようとした |
+| UnmapNotify | ウィンドウが非表示になった |
 
 :::message
-各イベントの詳細は、[X11 Protocol の Events](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Events) で確認できます。
+X11 には他にも多くのイベントが存在します。各イベントの詳細は、[X11 Protocol の Events](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Events) で確認できます。
 :::
 
-それぞれのイベントについて、詳しく見ていきましょう。
+本章で扱うイベントについて、それぞれ詳しく見ていきましょう。
 
 ### ConfigureRequest
 
@@ -212,7 +205,7 @@ fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
 
 なお、ウィンドウが閉じられるとき、UnmapNotify の後に DestroyNotify が発生します。UnmapNotify はウィンドウが非表示になったことを、DestroyNotify はウィンドウが破棄されたことを意味します。
 
-タイル型 Window Manager では、ウィンドウは常に表示されているか完全に閉じるかのどちらかなので、UnmapNotify の時点で必要な処理を行えば十分です。そのため、この本では DestroyNotify は扱いません。
+本書で実装するタイル型 Window Manager では、ウィンドウは常に表示されているか完全に閉じられているかのどちらかなので、UnmapNotify の時点で必要な処理を行えば十分です。そのため、この本では DestroyNotify は扱いません。
 
 ## 動作確認
 
@@ -235,7 +228,7 @@ fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
    ```
 3. xterm が Xephyr 内に表示される
 
-ログに `[ConfigureRequest]` と `[MapRequest]` が出力されれば成功です。これらは、xterm のウィンドウ作成リクエストが Window Manager に正しくリダイレクトされ、処理されたことを示しています。
+ログに `[ConfigureRequest]` と `[MapRequest]` が出力されれば成功です。これらは、xterm によるウィンドウ操作関連のリクエストが Window Manager に正しくリダイレクトされ、処理されたことを示しています。
 
 xterm で `exit` と入力してウィンドウを閉じると、以下のログが出力されます。
 
@@ -345,15 +338,15 @@ fn main() -> Result<()> {
 
 ## まとめ
 
-この章では、シンプルな Window Manager を実装しました。
+この章では、下記の機能を持つシンプルな Window Manager を実装しました。
 
-具体的には、下記の機能を持つ Window Manager を実装しました。
 - Window Manager の初期化 (SubstructureRedirect/SubstructureNotify マスクの設定)
 - イベントループの実装
 - 基本的なイベント (MapRequest, UnmapNotify, ConfigureRequest) の処理
 
 
-しかし、この段階では制限もあります。具体的には以下の通りです。
+しかし、この段階では制限もあります。
+
 - ウィンドウは単に表示されるだけで、レイアウト管理はしていない
 - 複数のウィンドウを管理する仕組みがない
 - キーボード操作はまだサポートしていない

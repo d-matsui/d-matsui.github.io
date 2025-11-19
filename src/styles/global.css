@@ -67,3 +67,26 @@ html[data-theme="dark"] {
 :target {
   scroll-margin-block: 1rem;
 }
+
+/* Mermaid diagrams - force light colors */
+svg[id^="mermaid-"] {
+  background-color: white !important;
+}
+
+svg[id^="mermaid-"] text,
+svg[id^="mermaid-"] tspan,
+svg[id^="mermaid-"] .nodeLabel,
+svg[id^="mermaid-"] .edgeLabel,
+svg[id^="mermaid-"] .label,
+svg[id^="mermaid-"] p {
+  fill: black !important;
+  color: black !important;
+}
+
+svg[id^="mermaid-"] rect,
+svg[id^="mermaid-"] .actor,
+svg[id^="mermaid-"] .labelBox,
+svg[id^="mermaid-"] .node rect {
+  fill: white !important;
+  stroke: black !important;
+}

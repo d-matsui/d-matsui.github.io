@@ -2,7 +2,7 @@ import { defineConfig, envField } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import partytown from "@astrojs/partytown";
-import mermaid from "astro-mermaid";
+import rehypeMermaid from "rehype-mermaid";
 import remarkToc from "remark-toc";
 import remarkCollapse from "remark-collapse";
 import {
@@ -17,10 +17,6 @@ import { SITE } from "./src/config";
 export default defineConfig({
   site: SITE.website,
   integrations: [
-    mermaid({
-      theme: "default",
-      autoTheme: true,
-    }),
     sitemap({
       filter: page => SITE.showArchives || !page.endsWith("/archives"),
     }),
@@ -32,7 +28,27 @@ export default defineConfig({
   ],
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
-    shikiConfig: {
+    rehypePlugins: [
+      [
+        rehypeMermaid,
+        {
+          mermaidConfig: {
+            theme: "base",
+            themeVariables: {
+              primaryColor: "#fff",
+              primaryTextColor: "#000",
+              primaryBorderColor: "#000",
+              lineColor: "#000",
+              secondaryColor: "#fff",
+              tertiaryColor: "#fff",
+            },
+          },
+        },
+      ],
+    ],
+    syntaxHighlight: {
+      type: "shiki",
+      excludeLangs: ["mermaid"],
       // For more themes, visit https://shiki.style/themes
       themes: { light: "min-light", dark: "night-owl" },
       defaultColor: false,

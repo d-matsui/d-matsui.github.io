@@ -39,26 +39,10 @@ xtrace -n -d :10 -D :9 -o ~/xlogo-trace.log xlogo
 構成を図示すると以下のようになります:
 
 ```mermaid
-graph TD
-    Client[xlogo<br/>DISPLAY=:9]
-    Proxy[xtrace<br/>プロキシ :9 → :10]
-    Server[Xephyr<br/>X Server :10]
-    WM[Window Manager<br/>DISPLAY=:10]
-
-    Client -->|リクエスト/イベント| Proxy
-    Proxy -->|転送| Server
-    WM <-->|イベント通知| Server
-
-    style Proxy fill:#f9f,stroke:#333,stroke-width:2px
-```
-
-または:
-
-```mermaid
 flowchart LR
-    xlogo["xlogo (Client)<br/>DISPLAY=:9"] --> xtrace["xtrace<br/>プロキシ"]
-    xtrace --> Xephyr["Xephyr (X Server)<br/>:10"]
-    WM["WM<br/>DISPLAY=:10"] <--> Xephyr
+    xlogo["xlogo (DISPLAY=:9)"] <--> xtrace["xtrace (プロキシ)"]
+    xtrace <--> Xephyr["Xephyr (:10)"]
+    WM["WM (DISPLAY=:10)"] <--> Xephyr
 ```
 
 これにより
@@ -119,7 +103,7 @@ Connection Close 時の動作は X11 Protocol の [Connection Close](https://www
 
 ## ウィンドウのライフサイクル
 
-以下は、X Client、X Server、Window Manager 間のリクエスト・イベントの流れを示すシーケンス図です。(ConfigureRequestも追加しています。)
+以下は、X Client、X Server、Window Manager 間のリクエスト・イベントの流れを示すシーケンス図です。
 
 ```mermaid
 sequenceDiagram
@@ -127,34 +111,33 @@ sequenceDiagram
     participant Server as X Server
     participant WM as Window Manager
 
-    Note over Client,WM: === ウィンドウ作成・表示 ===
+    rect rgb(240, 240, 240)
+    Note over Client,WM: ウィンドウ作成・表示
     Client->>Server: CreateWindow
-    Server->>WM: CreateNotify
+    Server-->>WM: CreateNotify
     Client->>Server: ConfigureWindow
-    Server->>WM: ConfigureRequest
+    Server-->>WM: ConfigureRequest
     WM->>Server: ConfigureWindow
-    Server->>Client: ConfigureNotify
-    Server->>WM: ConfigureNotify
+    Server-->>Client: ConfigureNotify
+    Server-->>WM: ConfigureNotify
     Client->>Server: MapWindow
-    Server->>WM: MapRequest
-    Server->>Client: MapNotify
-    Server->>WM: MapNotify
+    Server-->>WM: MapRequest
+    Server-->>Client: MapNotify
+    Server-->>WM: MapNotify
+    end
 
-    Note over Client,WM: === 一部ウィンドウの非表示 ===
+    rect rgb(240, 240, 240)
+    Note over Client,WM: ウィンドウの非表示
     Client->>Server: UnmapWindow
-    Server->>Client: UnmapNotify
-    Server->>WM: UnmapNotify
+    Server-->>Client: UnmapNotify
+    Server-->>WM: UnmapNotify
+    end
 
-    Note over Client,WM: === 明示的なウィンドウ破棄 ===
-    Client->>Server: DestroyWindow
-    Server->>Client: DestroyNotify
-    Server->>WM: DestroyNotify
-
-    Note over Client,WM: === プロセス終了によるウィンドウ破棄 ===
-    Note over Client: プロセス終了
-    Note over Server: 接続が閉じられる<br/>クライアントのリソースを破棄
-    Server->>WM: UnmapNotify
-    Server->>WM: DestroyNotify
+    rect rgb(240, 240, 240)
+    Note over Client,WM: プロセス終了
+    Server-->>WM: UnmapNotify
+    Server-->>WM: DestroyNotify
+    end
 ```
 ## まとめ
 

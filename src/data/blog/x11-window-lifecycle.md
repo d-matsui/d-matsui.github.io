@@ -8,7 +8,7 @@ draft: false
 tags:
   - X11
   - window-manager
-description: X11 におけるウィンドウのライフサイクルを、xtrace を使って調査し、クライアント・サーバー・WM 間のリクエスト・イベントのやり取りを明らかにする。
+description: X11 における Window のライフサイクルを、xtrace を使って調査し、クライアント・サーバー・WM 間のリクエスト・イベントのやり取りを明らかにする。
 ---
 
 ## はじめに
@@ -36,7 +36,7 @@ DISPLAY=:10 RUST_LOG=debug rwm > ~/wm.log 2>&1 &
 xtrace -n -d :10 -D :9 -o ~/xlogo-trace.log xlogo
 ```
 
-構成を図示すると以下のようになります:
+構成を図示すると以下のようになります。
 
 ```mermaid
 flowchart LR
@@ -45,15 +45,7 @@ flowchart LR
     WM["WM (DISPLAY=:10)"] <--> Xephyr
 ```
 
-これにより
-- `~/xlogo-trace.log`: xlogo (クライアント) が送受信したリクエスト・イベント
-- `~/wm.log`: WM が送受信したイベント
-を記録します。
-
-本調査では、特に以下の点を明らかにします。
-- ウィンドウ作成時と削除時に、どのようなリクエスト・イベントが発生するか
-- クライアントは明示的に `DestroyWindow` を呼ぶのか
-- プロセス終了時は何が起きるのか
+xlogo・WM が送受信したリクエスト・イベントを記録することで、ウィンドウ作成/削除時に、どのようなリクエスト・イベントが発生するかを明らかにします。
 
 ## xlogo の調査
 
@@ -65,9 +57,11 @@ xlogo を起動して `q` キーで終了させ、ログをライフサイクル
 grep -n "CreateWindow\|DestroyWindow\|DestroySubwindows\|MapWindow\|MapSubwindows\|UnmapWindow\|UnmapSubwindows\|ConfigureWindow\|CreateNotify\|DestroyNotify\|UnmapNotify\|MapNotify\|MapRequest\|ConfigureNotify\|ResizeRequest\|ConfigureRequest" ~/xlogo-trace.log
 ```
 
+ここでは、ウィンドウのライフサイクルに関連する [Requests](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Requests) と [Events](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Events) を grep しています。
+
 grep の結果、`CreateWindow` と `MapWindow` は確認できましたが、`DestroyWindow` や `UnmapWindow` は見つかりませんでした。
 
-なぜ DestroyWindow が呼ばれないのか確認するため、xlogo のソースコードを調査したところ、`q` キーでイベントループを抜けて `main()` から `return` するだけであることがわかりました。また、xlogo のコード全体を grep したところ、Xlib のクリーンアップ関数 (`XDestroyWindow` など) や X toolkit のクリーンアップ関数 (`XtDestroyWidget` など) は呼ばれていないようでした。
+なぜ DestroyWindow が呼ばれないのか確認するため、xlogo のソースコード（[xorg/app/xlogo](https://gitlab.freedesktop.org/xorg/app/xlogo)）を調査したところ、`q` キーでイベントループを抜けて `main()` から `return` するだけであることがわかりました。また、xlogo のコード全体を grep したところ、Xlib のクリーンアップ関数 (`XDestroyWindow` など) や X toolkit のクリーンアップ関数 (`XtDestroyWidget` など) は呼ばれていないようでした。
 
 一方、WM のログを確認したところ、xlogo 終了時に `UnmapNotify` と `DestroyNotify` が送られていました。つまり、クライアントは DestroyWindow などを呼んでいないが、X サーバーがウィンドウを破棄し、WM に通知していることがわかります。
 
@@ -77,17 +71,16 @@ grep の結果、`CreateWindow` と `MapWindow` は確認できましたが、`D
 
 xterm で Ctrl+右クリックでメニューを表示し、閉じてから `exit` で終了させ、同様に grep しました。
 
-その結果、xterm は 3 つの Window を作成していることがわかりました。メインウィンドウ (root の子)、描画領域 (メインウィンドウの子)、そしてメニュー (root の子、`override-redirect=true`) です。
-<!-- override-redirect=true ってなにって読者はなる -->
+その結果、xterm は 3 つの Window を作成していることがわかりました。メインウィンドウ (root の子)、描画領域 (メインウィンドウの子)、そしてメニュー (root の子、`override-redirect=true`) です。`override-redirect` は Window の attribute で、Window Manager に対して「このウィンドウには干渉しないで」と伝えるものです。これにより、メニューが WM によるレイアウトの対象にならないようにしています。
 
 メニューを閉じた時、ログには `UnmapWindow` が記録されていましたが、`DestroyWindow` は見つかりませんでした。なので、メニューは非表示にされるだけで、Window 自体は破棄されずに残っています。また、xterm 終了時も `DestroyWindow` は呼ばれていませんでした。
 
 ## 調査結果のまとめ
 
 xlogo と xterm の調査により、以下がわかりました。
-- アプリケーション全体を終了する時、クライアントは明示的に `DestroyWindow` を呼ばない
-- プロセスが終了すると X との Connection が閉じられ、サーバーがクライアントのリソースを破棄する
-- 一部のウィンドウ (メニューなど) を閉じる時は `UnmapWindow` を使い、再利用のために Window を残すことがある
+- 今回調査したケースでは、アプリケーション終了時にクライアントは明示的に `DestroyWindow` を呼ばなかった
+- プロセス終了後、サーバーから WM に `UnmapNotify` と `DestroyNotify` が送信された
+- 一部のウィンドウ (メニューなど) を閉じる時は `UnmapWindow` を使い、Window 自体は破棄せずに残すことがある
 
 Connection Close 時の動作は X11 Protocol の [Connection Close](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#Connection_Close) に書かれています。
 
@@ -97,13 +90,13 @@ Connection Close 時の動作は X11 Protocol の [Connection Close](https://www
 >
 > After save-set processing, all windows created by the client are destroyed.
 
-つまり、接続が閉じられると、クライアントが作成した全ての Window が破棄されるようです。まあそうしないとゴミが貯まっちゃいますもんね。
+ここで mode は close-down-mode を指します。これは接続が閉じられたときにクライアントのリソースをどう扱うかを定義するもので（[SetCloseDownMode](https://www.x.org/releases/X11R7.7/doc/xproto/x11protocol.html#requests:SetCloseDownMode) 参照）、デフォルトでは Destroy mode です。つまり、接続が閉じられると、クライアントが作成した全ての Window が破棄されます。
 
 これらの調査結果を踏まえて、次のセクションでウィンドウのライフサイクル全体をシーケンス図で示します。
 
 ## ウィンドウのライフサイクル
 
-以下は、X Client、X Server、Window Manager 間のリクエスト・イベントの流れを示すシーケンス図です。
+以下は、X Client、X Server、Window Manager 間のリクエスト・イベントの流れを示すシーケンス図です。実線の矢印は Request、破線の矢印は Event を表します。
 
 ```mermaid
 sequenceDiagram

@@ -132,6 +132,3 @@ sequenceDiagram
     Server-->>WM: DestroyNotify
     end
 ```
-## まとめ
-
-<!-- TODO: まとめる -->

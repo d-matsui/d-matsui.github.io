@@ -1,9 +1,9 @@
 ---
 author: Daiki Matsui
-pubDatetime: 2025-11-19T09:10:42+09:00
+pubDatetime: 2025-11-20T13:07:42+09:00
 title: X11 Window のライフサイクル
 slug: x11-window-lifecycle
-featured: false
+featured: true
 draft: false
 tags:
   - X11

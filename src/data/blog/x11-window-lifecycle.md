@@ -182,6 +182,7 @@ xterm 上で Ctrl+ 右クリックを行いメニューを表示し、それを�
 ## 調査結果のまとめ
 
 xlogo と xterm の調査により、以下がわかりました。
+
 - 調査したケースにおいて、アプリケーション終了時にクライアントは `DestroyWindow` リクエストを送信しなかった
 - プロセス終了後、サーバーから Window Manager に `UnmapNotify` と `DestroyNotify` が送信された
 - 一部のウィンドウ (メニューなど) を閉じる際、クライアントは`UnmapWindow` リクエストを使用し、Window 自体は破棄せずに残す場合がある

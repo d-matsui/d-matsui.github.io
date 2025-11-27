@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 400">
+  <defs>
+    <style>
+      .window-box { fill: #ffffff; stroke: #2c3e50; stroke-width: 2; }
+      .text-main { font-family: sans-serif; font-size: 16px; text-anchor: middle; fill: #2c3e50; dominant-baseline: middle; }
+      .dimension-line { stroke: #e74c3c; stroke-width: 1.5; fill: none; }
+      .dimension-arrow { fill: #e74c3c; }
+      .dimension-text { font-family: monospace; font-size: 14px; text-anchor: middle; fill: #e74c3c; font-weight: bold; }
+    </style>
+    <marker id="arrow-start" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,3 L6,0 L6,6 z" class="dimension-arrow" />
+    </marker>
+    <marker id="arrow-end" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L6,3 z" class="dimension-arrow" />
+    </marker>
+  </defs>
+
+  <!-- Master Window (左半分) -->
+  <rect x="80" y="60" width="230" height="260" class="window-box" rx="3" />
+  <text x="195" y="190" class="text-main">Master</text>
+
+  <!-- Stack Window 1 (右上) -->
+  <rect x="310" y="60" width="230" height="86" class="window-box" rx="3" />
+  <text x="425" y="103" class="text-main">Stack 1</text>
+
+  <!-- Stack Window 2 (右中) -->
+  <rect x="310" y="146" width="230" height="88" class="window-box" rx="3" />
+  <text x="425" y="190" class="text-main">Stack 2</text>
+
+  <!-- Stack Window 3 (右下) -->
+  <rect x="310" y="234" width="230" height="86" class="window-box" rx="3" />
+  <text x="425" y="277" class="text-main">Stack 3</text>
+
+  <!-- screen_width 寸法線 (上部) -->
+  <line x1="80" y1="35" x2="540" y2="35" class="dimension-line" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <text x="310" y="25" class="dimension-text">screen_width</text>
+
+  <!-- screen_height 寸法線 (左側) -->
+  <line x1="35" y1="60" x2="35" y2="320" class="dimension-line" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <text x="18" y="190" class="dimension-text" style="writing-mode: tb; text-anchor: middle;">screen_height</text>
+
+  <!-- 1/2 (ratio=0.5) 寸法線 (下部左) -->
+  <line x1="80" y1="345" x2="310" y2="345" class="dimension-line" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <text x="195" y="360" class="dimension-text">1/2</text>
+  <text x="195" y="377" class="dimension-text" style="font-size: 12px;">(ratio=0.5)</text>
+
+  <!-- 1/3 寸法線 (右側) -->
+  <line x1="565" y1="60" x2="565" y2="146" class="dimension-line" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <text x="600" y="103" class="dimension-text">1/3</text>
+</svg>

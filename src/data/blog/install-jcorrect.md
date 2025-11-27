@@ -1,7 +1,7 @@
 ---
 author: Daiki Matsui
 pubDatetime: 2025-11-20T13:16:00+09:00
-title: 日本語文章校正ツール jcorrect のインストールと設定
+title: jcorrect のインストール手順
 slug: install-jcorrect
 featured: true
 draft: false
@@ -10,12 +10,12 @@ tags:
   - tools
   - emacs
   - writing
-description: CaboCha ベースの日本語文章校正ツールである jcorrect のインストール手順と設定方法
+description: CaboCha ベースの日本語文章校正ツールである jcorrect のインストール手順
 ---
 
 ## はじめに
 
-わかりやすい日本語の文章を自分でも書けるようになりたいと思って、h-ohsaki 氏の日本語文章校正ツール jcorrect を試してみました。この記事は、そのインストール手順をまとめた備忘録です。
+わかりやすい日本語の文章を自分でも書けるようになりたいと思って、h-ohsaki 氏の日本語文章校正ツール jcorrect を試してみました。
 
 jcorrect は CaboCha による係り受け解析を利用して、日本語文章の文法的な問題を検出するツールです。依存ライブラリをソースからビルドしたり、UTF-8 対応のために修正が必要だったりしたので、その手順をまとめます。
 
@@ -118,7 +118,7 @@ chmod +x jcorrect
 
 `jcorrect` は `/usr/local/bin` や `~/bin` など PATH の通った場所に配置します。`jcorrect.el` は `~/.emacs.d/elisp` などに配置し、`load-path` に追加します。
 
-UTF-8 で入出力するよう jcorrect スクリプトを修正します。
+UTF-8 で入出力するよう jcorrect を修正します。
 
 ```diff
 @@ -21,6 +21,8 @@
@@ -205,7 +205,6 @@ root window に対して SubstructureRedirect と SubstructureNotify のイベ�
 係り受け関係が図で表示され、以下のような問題が指摘されます
 
 - `too long phrase` - フレーズが長すぎる (60文字以下推奨)
-- `reversed word order` - 語順が逆転している可能性
 - `check meaning of ...` - 係り受けの意味の確認
 
 すべてが必ずしも修正すべき問題ではありませんが、文章を見直すきっかけになります。

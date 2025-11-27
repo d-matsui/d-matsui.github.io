@@ -58,6 +58,58 @@ master-stack レイアウトの計算方法を図で示します。
 
 X Server から送られてくるイベントに応じてレイアウトを計算することで、master-stack レイアウトを実現します。具体的には、ウィンドウ表示のイベント (MapRequest) でウィンドウをリストに追加し、非表示のイベント (UnmapNotify) でリストから削除します。それぞれのタイミングでレイアウトを計算し、X Server にウィンドウの配置を指示します。
 
+### 構造体の拡張
+
+レイアウト機能を実装するために、`Window` 構造体と `WindowManager` 構造体を拡張します。
+
+`Window` 構造体に位置とサイズのフィールドを追加します。
+
+```rust
+#[derive(Debug)]
+struct Window {
+    id: u32,
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+}
+
+impl Window {
+    fn new(id: u32) -> Self {
+        Self {
+            id,
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+        }
+    }
+}
+```
+
+`WindowManager` 構造体に、画面サイズとウィンドウリストのフィールドを追加します。
+
+```rust
+struct WindowManager {
+    conn: RustConnection,
+    screen_width: u32,
+    screen_height: u32,
+    windows: Vec<Window>,
+}
+```
+
+`new()` 関数では、screen から画面サイズを取得し、ウィンドウリストを初期化します。
+
+```rust
+// screen info
+let screen = &conn.setup().roots[screen_num];
+let screen_width = u32::from(screen.width_in_pixels);
+let screen_height = u32::from(screen.height_in_pixels);
+
+// managed windows
+let windows = Vec::new();
+```
+
 ### window の追加
 
 MapRequest イベントの処理では、新しいウィンドウをリストに追加し、レイアウトを再計算します。

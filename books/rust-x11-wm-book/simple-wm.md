@@ -33,63 +33,13 @@ Window Manager の観点では、以下の 2 つのイベントマスクが重�
 それでは、SubstructureRedirect と SubstructureNotify を root window に設定するコードを実装しましょう。
 
 ```rust
-use anyhow::Result;
-use tracing::info;
-use x11rb::{
-    connection::Connection,
-    protocol::xproto::{ChangeWindowAttributesAux, ConnectionExt, EventMask},
-    rust_connection::RustConnection,
-};
-
-struct WindowManager {
-    conn: RustConnection,
-}
-impl WindowManager {
-    fn new(conn: RustConnection, screen_num: usize) -> Result<Self> {
-        // screen info
-        let screen = &conn.setup().roots[screen_num];
-
-        // Set SUBSTRUCTURE_REDIRECT/NOTIFY mask to become window manager
-        let event_mask = EventMask::SUBSTRUCTURE_REDIRECT | EventMask::SUBSTRUCTURE_NOTIFY;
-        let change = ChangeWindowAttributesAux::default().event_mask(event_mask);
-        conn.change_window_attributes(screen.root, &change)?
-            .check()?;
-        info!("Successfully became window manager");
-
-        Ok(Self { conn })
-    }
-}
-
-fn main() -> Result<()> {
-    // Initialize tracing subscriber to enable logging
-    tracing_subscriber::fmt::init();
-
-    // Connect to X server using $DISPLAY
-    let (conn, screen_num) = x11rb::connect(None)?;
-    info!("Connected to X server with screen {:?}", screen_num);
-
-    let wm = WindowManager::new(conn, screen_num)?;
-
-    Ok(())
-}
-```
-
-このコードは以下の流れで動作します。
-
-1. `main()` で X サーバーに接続 (前章で実装した内容と同じ)
-2. `WindowManager::new()` を呼び出して Window Manager を初期化
-3. `new()` 内で root window に対してイベントマスクを設定
-
-重要なポイントは、`new()` メソッドの中の `change_window_attributes` です。 root window に対して SubstructureRedirect と SubstructureNotify の 2 つのイベントマスクを設定している部分です。
-
-```rust
 let event_mask = EventMask::SUBSTRUCTURE_REDIRECT | EventMask::SUBSTRUCTURE_NOTIFY;
 let change = ChangeWindowAttributesAux::default().event_mask(event_mask);
 conn.change_window_attributes(screen.root, &change)?
     .check()?;
 ```
 
-これらのイベントマスクは、第 1 章で学んだように、同時に 1 つのクライアントしか設定できません。既に別の Window Manager が動作している場合、`change_window_attributes` はエラーを返します。
+`change_window_attributes` で root window に対して SubstructureRedirect と SubstructureNotify のイベントマスクを設定しています。これらのイベントマスクは、第 1 章で学んだように、同時に 1 つのクライアントしか設定できません。既に別の Window Manager が動作している場合、`change_window_attributes` はエラーを返します。
 
 ## イベントループの実装
 
@@ -141,6 +91,53 @@ X11 では、クライアントからのリクエストは出力バッファに�
 ## 基本的なイベントのハンドリング
 
 この章で実装する Window Manager は、クライアントからのリクエストに応じてウィンドウのサイズや位置を設定・表示し、ウィンドウが非表示になったことを検知するシンプルなものです。この機能を実装するために、ConfigureRequest (サイズ・位置設定)、MapRequest (表示)、UnmapNotify (非表示通知) の 3 つのイベントを処理します。
+
+以下のシーケンス図は、ウィンドウのライフサイクル全体を示しています。青色の部分が本章で扱うイベントです。
+
+```mermaid
+sequenceDiagram
+    participant Client as X Client
+    participant Server as X Server
+    participant WM as Window Manager
+
+    Note over Client,WM: ウィンドウ作成
+    Client->>Server: CreateWindow
+    Server-->>WM: CreateNotify
+
+    Note over Client,WM: サイズ・位置設定
+    Client->>Server: ConfigureWindow
+    rect rgb(200, 230, 255)
+    Server-->>WM: ConfigureRequest
+    WM->>Server: ConfigureWindow
+    end
+    Server-->>WM: ConfigureNotify
+
+    Note over Client,WM: ウィンドウ表示
+    Client->>Server: MapWindow
+    rect rgb(200, 230, 255)
+    Server-->>WM: MapRequest
+    WM->>Server: MapWindow
+    end
+    Server-->>WM: MapNotify
+
+    alt ウィンドウ非表示
+        Client->>Server: UnmapWindow
+        rect rgb(200, 230, 255)
+        Server-->>WM: UnmapNotify
+        end
+    else ウィンドウ破棄
+        Client->>Server: DestroyWindow
+        rect rgb(200, 230, 255)
+        Server-->>WM: UnmapNotify
+        end
+        Server-->>WM: DestroyNotify
+    else 接続切断
+        rect rgb(200, 230, 255)
+        Server-->>WM: UnmapNotify
+        end
+        Server-->>WM: DestroyNotify
+    end
+```
 
 | イベント | 説明 |
 |---------|------|

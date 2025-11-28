@@ -4,11 +4,13 @@ title: "タイル型レイアウトの実装"
 
 ## はじめに
 
-この章では、これまでの章で作成した Window Manager にタイリングレイアウト機能を実装します。
+この章では、これまでに作成した Window Manager にタイリングレイアウト機能を実装します。
 
-タイリングレイアウトでは、ウィンドウを自動的にタイル状に配置し、画面領域を効率的に使います。ウィンドウの追加・削除に応じて、Window Manager が自動的にウィンドウのサイズと位置を調整します。
+X11 では、ウィンドウの位置やサイズの管理は Window Manager の責務です。アプリケーション (クライアント) がウィンドウの表示を要求すると、Window Manager がその配置を決定し、X Server に指示します。本章では、この仕組みを利用してタイリングレイアウトを実現します。
 
-本章では、シンプルなタイリングレイアウトである master-stack レイアウトを実装します。master-stack レイアウトは、タイリングレイアウトの中でも最もシンプルな形式の1つです。このシンプルなレイアウトを題材に、Window Manager が X Server からのイベントをどのようにハンドリングするかを学びます。
+タイリングレイアウトでは、ウィンドウを自動的にタイル状に配置し、画面領域を効率的に使用します。ウィンドウの追加・削除に応じて、Window Manager が自動的にウィンドウのサイズと位置を調整します。
+
+本章では、シンプルなタイリングレイアウトである master-stack レイアウトを実装します。master-stack レイアウトは、最もシンプルなタイリングレイアウトの1つです。このシンプルなレイアウトを題材に、Window Manager が X Server からのイベントをどのようにハンドリングするかを学びます。
 
 <!-- TODO: master-stack レイアウトで Window が管理されている gif を挿入する。 -->
 
@@ -40,7 +42,7 @@ master-stack レイアウトの計算方法を図で示します。
 
 画面を左右に 1/2 ずつ分割し、左側を master、右側を stack 領域とします。stack 領域は、ウィンドウの個数に応じて縦方向に均等分割します (この例では 1/3 ずつ)。
 
-具体的な計算方法は以下の通りです。
+計算方法は以下の通りです。
 
 ### master ウィンドウ
 
@@ -56,7 +58,7 @@ master-stack レイアウトの計算方法を図で示します。
 
 ## master-stackレイアウトの実装
 
-X Server から送られてくるイベントに応じてレイアウトを計算することで、master-stack レイアウトを実現します。具体的には、ウィンドウ表示のイベント (MapRequest) でウィンドウをリストに追加し、非表示のイベント (UnmapNotify) でリストから削除します。それぞれのタイミングでレイアウトを計算し、X Server にウィンドウの配置を指示します。
+X Server からのイベントに応じてレイアウトを計算することで、master-stack レイアウトを実現します。具体的には、ウィンドウ表示のイベント (MapRequest) でウィンドウをリストに追加し、非表示のイベント (UnmapNotify) でリストから削除します。それぞれのタイミングでレイアウトを計算し、X Server にウィンドウの配置を指示します。
 
 ### 構造体の拡張
 
@@ -98,7 +100,7 @@ struct WindowManager {
 }
 ```
 
-`new()` 関数では、screen から画面サイズを取得し、ウィンドウリストを初期化します。
+`new()` 関数では、`screen` から画面サイズを取得し、ウィンドウリストを初期化します。
 
 ```rust
 // screen info
@@ -144,7 +146,7 @@ fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
 }
 ```
 
-`calculate_layout()` ですべてのウィンドウの位置とサイズを計算した後、`ConfigureWindow` で配置を更新し、`MapWindow` で新しいウィンドウを表示します。
+`calculate_layout()` ですべてのウィンドウの位置とサイズを計算した後、`configure_window` で配置を更新し、`map_window` で新しいウィンドウを表示します。
 
 ### window の削除
 
@@ -170,7 +172,7 @@ fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
 }
 ```
 
-`calculate_layout()` で残りのウィンドウの位置とサイズを計算した後、`ConfigureWindow` ですべてのウィンドウの配置を更新します。
+`calculate_layout()` で残りのウィンドウのレイアウトを計算した後、`configure_window` ですべてのウィンドウの配置を更新します。
 
 ### レイアウトの計算
 
@@ -219,8 +221,8 @@ fn calculate_layout(&mut self) {
 
 この章では、master-stack レイアウトを実装し、タイリング機能を持つ Window Manager を完成させました。
 
-- master-stack レイアウトの仕組みを理解した
-- MapRequest と UnmapNotify のイベントハンドリングを実装した
+- master-stack レイアウトの仕組みを理解する
+- MapRequest と UnmapNotify のイベントハンドリングを実装する
 
 この実装を通じて、Window Manager がイベントに応じてウィンドウを配置する仕組みを学びました。
 

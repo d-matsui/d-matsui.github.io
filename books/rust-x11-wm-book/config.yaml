@@ -8,6 +8,6 @@ chapters:
   - x11-basics
   - setup
   - simple-wm
-  # - tiling-layout
+  - tiling-layout
   # - key-handling
   # - next-steps

@@ -73,6 +73,10 @@ When writing or editing blog posts in Japanese, follow these style rules:
    - Correct: `protocol` : プロトコルファミリー
    - Incorrect: `protocol`: プロトコルファミリー (no space)
    - Incorrect: `protocol`：プロトコルファミリー (full-width)
+   - **IMPORTANT**: Do NOT use colon at the end of a sentence before a list or code block
+   - Correct: 処理の流れは以下の通りです。
+   - Incorrect: 処理の流れは以下の通りです:
+   - Incorrect: 以下のコードを見てください:
 
 4. **Code formatting**: Add half-width spaces before and after backticks
    - Correct: それらを `Screen` として

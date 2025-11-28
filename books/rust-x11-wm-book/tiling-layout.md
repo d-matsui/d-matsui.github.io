@@ -12,7 +12,7 @@ X11 では、ウィンドウの位置やサイズの管理は Window Manager の
 
 本章では、シンプルなタイリングレイアウトである master-stack レイアウトを実装します。master-stack レイアウトは、最もシンプルなタイリングレイアウトの1つです。このシンプルなレイアウトを題材に、Window Manager が X Server からのイベントをどのようにハンドリングするかを学びます。
 
-<!-- TODO: master-stack レイアウトで Window が管理されている gif を挿入する。 -->
+![master-stack レイアウトのデモ](/images/master-stack-demo.gif)
 
 ## master-stackレイアウトの概要
 

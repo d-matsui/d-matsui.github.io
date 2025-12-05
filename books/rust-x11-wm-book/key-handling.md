@@ -22,9 +22,9 @@ title: "キーイベントのハンドリング"
 
 ### grab_key によるキーイベントの取得
 
-Window Manager がキーボードショートカットを実装するには、特定のキーの組み合わせを自分宛てに届くようにする必要があります。これを実現するのが `grab_key()` です。
+キーボードショートカットを実装するには、特定のキーが押されたことを Window Manager が知る必要があります。これを実現するのが `grab_key()` です。
 
-`grab_key()` を使って root window に対してキーと modifier の組み合わせを grab すると、その組み合わせが押されたときに KeyPress イベントを受け取れるようになります。
+`grab_key()` を使って root window に対して key と modifier の組み合わせを grab します。すると、その組み合わせが押されたときに KeyPress イベントを受け取れるようになります。
 
 ### KeyPress イベントの構成要素
 
@@ -56,16 +56,17 @@ enum Action {
 }
 ```
 
-キーバインドは、Modifier と KeyCode の組み合わせを `Action` に対応付けた `HashMap` で管理することにします。
+キーバインドは、Modifier と KeyCode の組み合わせを `Action` に対応付けた `HashMap` で管理することにします。`WindowManager` 構造体にフィールドを追加します。
 
-```rust
-use std::collections::HashMap;
-use x11rb::protocol::xproto::ModMask;
-
-struct WindowManager {
-    // ... 既存のフィールド ...
-    keybindings: HashMap<(ModMask, u8), Action>,
-}
+```diff rust
+ struct WindowManager {
+     conn: RustConnection,
+     screen_width: u32,
+     screen_height: u32,
++    root_window: u32,
+     windows: Vec<Window>,
++    keybindings: HashMap<(ModMask, u8), Action>,
+ }
 ```
 
 `WindowManager::new()` 内でキーバインドを初期化します。
@@ -97,12 +98,46 @@ fn register_keybindings(&mut self) -> Result<()> {
 }
 ```
 
-main 関数では、`WindowManager::new()` の後に `register_keybindings()` を呼び出します。
+登録したキーバインドが押されると KeyPress イベントが発生します。`handle_event()` に KeyPress の処理を追加します。
+
+```diff rust
+ fn handle_event(&mut self, event: &Event) -> Result<()> {
+     match event {
+         Event::MapRequest(e) => self.handle_map_request(e)?,
+         Event::ConfigureRequest(e) => self.handle_configure_request(e)?,
+         Event::UnmapNotify(e) => self.handle_unmap_notify(e)?,
++        Event::KeyPress(e) => self.handle_key_press(e)?,
+         _ => debug!("[Unhandled] {:?}", event),
+     }
+
+     Ok(())
+ }
+```
+
+`handle_key_press()` では、押されたキーに対応する `Action` を取得して実行します。
 
 ```rust
-let mut wm = WindowManager::new(conn, screen_num)?;
-wm.register_keybindings()?;
-wm.run()?;
+fn handle_key_press(&mut self, event: &KeyPressEvent) -> Result<()> {
+    let modifier = ModMask::from(event.state.bits());
+
+    if let Some(action) = self.keybindings.get(&(modifier, event.detail)).copied() {
+        match action {
+            Action::FocusNext => self.focus_next()?,
+            Action::FocusPrev => self.focus_prev()?,
+            Action::SwapMaster => self.swap_master()?,
+        }
+    }
+
+    Ok(())
+}
+```
+
+main 関数では、`WindowManager::new()` の後に `register_keybindings()` を呼び出します。
+
+```diff rust
+ let mut wm = WindowManager::new(conn, screen_num)?;
++wm.register_keybindings()?;
+ wm.run()?;
 ```
 
 :::message
@@ -119,11 +154,16 @@ X11 では、キーボード入力はフォーカスウィンドウ (とその�
 
 まず、`WindowManager` 構造体にフォーカス中のウィンドウを管理するフィールドを追加します。
 
-```rust
-struct WindowManager {
-    // ... 既存のフィールド ...
-    focused_window: Option<u32>,
-}
+```diff rust
+ struct WindowManager {
+     conn: RustConnection,
+     screen_width: u32,
+     screen_height: u32,
+     root_window: u32,
+     windows: Vec<Window>,
++    focused_window: Option<u32>,
+     keybindings: HashMap<(ModMask, u8), Action>,
+ }
 ```
 
 フォーカスを設定する関数を実装します。
@@ -183,6 +223,28 @@ fn focus_prev(&mut self) -> Result<()> {
 }
 ```
 
+フォーカス中のウィンドウが閉じられたときは、別のウィンドウにフォーカスを移動する必要があります。ここではリストの先頭、つまりマスターウィンドウにフォーカスを移動します。
+
+```diff rust
+ fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
+     info!("Window unmapped: win={}", event.window);
+     self.windows.retain(|w| w.id != event.window);
+
++    if self.focused_window == Some(event.window) {
++        if let Some(first) = self.windows.first() {
++            self.focus_window(first.id)?;
++        } else {
++            self.focused_window = None;
++        }
++    }
++
+     self.calculate_layout();
+     self.apply_layout()?;
+
+     Ok(())
+ }
+```
+
 ## フォーカス状態の表示
 
 フォーカスの切り替えだけでは、どのウィンドウがフォーカスされているか視覚的にわかりません。フォーカス中のウィンドウをボーダー色で区別できるようにします。
@@ -196,33 +258,28 @@ X11 のウィンドウにはボーダーを設定できます。ボーダーに�
 
 ボーダーはウィンドウの外側に描画されます。そのため、レイアウト計算時にはボーダーの幅を考慮してウィンドウサイズを調整する必要があります。前章で実装した `calculate_layout()` を以下のように修正します。
 
-```rust
-fn calculate_layout(&mut self) {
-    let num_windows = self.windows.len() as u32;
-    let master_width = (self.screen_width as f32 * MASTER_RATIO) as u32;
+```diff rust
+             window.width = if num_windows == 1 {
+-                self.screen_width
++                self.screen_width - BORDER_WIDTH * 2
+             } else {
+-                master_width
++                master_width - BORDER_WIDTH * 2
+             };
+-            window.height = self.screen_height;
++            window.height = self.screen_height - BORDER_WIDTH * 2;
+         } else {
+             let stack_count = num_windows - 1;
+             let stack_height = self.screen_height / stack_count;
+             let stack_index = (idx - 1) as u32;
 
-    for (idx, window) in self.windows.iter_mut().enumerate() {
-        if idx == 0 {
-            window.x = 0;
-            window.y = 0;
-            window.width = if num_windows == 1 {
-                self.screen_width - BORDER_WIDTH * 2
-            } else {
-                master_width - BORDER_WIDTH * 2
-            };
-            window.height = self.screen_height - BORDER_WIDTH * 2;
-        } else {
-            let stack_count = num_windows - 1;
-            let stack_height = self.screen_height / stack_count;
-            let stack_index = (idx - 1) as u32;
-
-            window.x = master_width as i32;
-            window.y = (stack_height * stack_index) as i32;
-            window.width = self.screen_width - master_width - BORDER_WIDTH * 2;
-            window.height = stack_height - BORDER_WIDTH * 2;
-        }
-    }
-}
+             window.x = master_width as i32;
+             window.y = (stack_height * stack_index) as i32;
+-            window.width = self.screen_width - master_width;
+-            window.height = stack_height;
++            window.width = self.screen_width - master_width - BORDER_WIDTH * 2;
++            window.height = stack_height - BORDER_WIDTH * 2;
+         }
 ```
 
 各ウィンドウの width と height から `BORDER_WIDTH * 2` を引いています。左右 (または上下) 両側にボーダーがあるため、2倍する必要があります。
@@ -231,45 +288,52 @@ fn calculate_layout(&mut self) {
 
 ボーダーの太さと色を定数として定義します。
 
-```rust
-const BORDER_WIDTH: u32 = 5;
-const BORDER_COLOR_FOCUSED: u32 = 0xFF0000;   // 赤
-const BORDER_COLOR_UNFOCUSED: u32 = 0x000000; // 黒
+```diff rust
+ /// Ratio of master window width to screen width
+ const MASTER_RATIO: f32 = 0.5;
++const BORDER_WIDTH: u32 = 5;
++const BORDER_COLOR_FOCUSED: u32 = 0xFF0000;   // 赤
++const BORDER_COLOR_UNFOCUSED: u32 = 0x000000; // 黒
 ```
 
 `focus_window()` の先頭に、ボーダー色を更新する処理を追加します。
 
-```rust
-fn focus_window(&mut self, window_id: u32) -> Result<()> {
-    if let Some(prev) = self.focused_window {
-        let attr = ChangeWindowAttributesAux::default().border_pixel(BORDER_COLOR_UNFOCUSED);
-        self.conn.change_window_attributes(prev, &attr)?;
-    }
-
-    let attr = ChangeWindowAttributesAux::default().border_pixel(BORDER_COLOR_FOCUSED);
-    self.conn.change_window_attributes(window_id, &attr)?;
-
-    // ...
-}
+```diff rust
+ fn focus_window(&mut self, window_id: u32) -> Result<()> {
++    if let Some(prev) = self.focused_window {
++        let attr = ChangeWindowAttributesAux::default().border_pixel(BORDER_COLOR_UNFOCUSED);
++        self.conn.change_window_attributes(prev, &attr)?;
++    }
++
++    let attr = ChangeWindowAttributesAux::default().border_pixel(BORDER_COLOR_FOCUSED);
++    self.conn.change_window_attributes(window_id, &attr)?;
++
+     self.conn
+         .set_input_focus(InputFocus::PARENT, window_id, CURRENT_TIME)?;
+     self.focused_window = Some(window_id);
+     Ok(())
+ }
 ```
 
 新規ウィンドウが表示されるときにボーダーの太さを設定し、そのウィンドウにフォーカスを当てます。`handle_map_request()` を以下のように修正します。
 
-```rust
-fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
-    self.windows.push(Window::new(event.window));
-    self.calculate_layout();
-    self.apply_layout()?;
+```diff rust
+ fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
+     info!("Window mapped: win={}", event.window);
+     self.windows.push(Window::new(event.window));
+-
+     self.calculate_layout();
+     self.apply_layout()?;
 
-    let geom = ConfigureWindowAux::default().border_width(BORDER_WIDTH);
-    self.conn.configure_window(event.window, &geom)?.check()?;
++    let geom = ConfigureWindowAux::default().border_width(BORDER_WIDTH);
++    self.conn.configure_window(event.window, &geom)?.check()?;
++
+     self.conn.map_window(event.window)?.check()?;
 
-    self.conn.map_window(event.window)?.check()?;
-
-    self.focus_window(event.window)?;
-
-    Ok(())
-}
++    self.focus_window(event.window)?;
++
+     Ok(())
+ }
 ```
 
 ## マスターウィンドウとのスワップ

@@ -60,13 +60,14 @@ master-stack レイアウトの計算方法を図で示します。
 
 X Server からのイベントに応じてレイアウトを計算することで、master-stack レイアウトを実現します。具体的には、ウィンドウ表示のイベント (MapRequest) でウィンドウをリストに追加し、非表示のイベント (UnmapNotify) でリストから削除します。それぞれのタイミングでレイアウトを計算し、X Server にウィンドウの配置を指示します。
 
-### 構造体の拡張
+### Window 構造体の追加
 
-レイアウト機能を実装するために、`Window` 構造体と `WindowManager` 構造体を拡張します。
-
-`Window` 構造体に位置とサイズのフィールドを追加します。
+ウィンドウの位置とサイズを管理するために、`Window` 構造体を新規に追加します。
 
 ```rust
+/// Ratio of master window width to screen width
+const MASTER_RATIO: f32 = 0.5;
+
 #[derive(Debug, Default)]
 struct Window {
     id: u32,
@@ -86,80 +87,87 @@ impl Window {
 }
 ```
 
+`MASTER_RATIO` は master ウィンドウの幅を画面幅に対する比率で定義する定数です。
+
+### WindowManager 構造体の拡張
+
 `WindowManager` 構造体に、画面サイズとウィンドウリストのフィールドを追加します。
 
-```rust
-struct WindowManager {
-    conn: RustConnection,
-    screen_width: u32,
-    screen_height: u32,
-    windows: Vec<Window>,
-}
+```diff rust
+ struct WindowManager {
+     conn: RustConnection,
++    screen_width: u32,
++    screen_height: u32,
++    windows: Vec<Window>,
+ }
 ```
 
 `new()` 関数では、`screen` から画面サイズを取得し、ウィンドウリストを初期化します。
 
-```rust
-let screen = &conn.setup().roots[screen_num];
-let screen_width = u32::from(screen.width_in_pixels);
-let screen_height = u32::from(screen.height_in_pixels);
+```diff rust
+ impl WindowManager {
+     fn new(conn: RustConnection, screen_num: usize) -> Result<Self> {
+         let screen = &conn.setup().roots[screen_num];
++        let screen_width = u32::from(screen.width_in_pixels);
++        let screen_height = u32::from(screen.height_in_pixels);
++
++        let windows = Vec::new();
 
-let windows = Vec::new();
+         // set SUBSTRUCTURE_REDIRECT/NOTIFY mask to become window manager
 ```
 
-### window の追加
+また、`Ok(Self { ... })` の部分も新しいフィールドを含めるように変更します。
+
+```diff rust
+-        Ok(Self { conn })
++        Ok(Self {
++            conn,
++            screen_width,
++            screen_height,
++            windows,
++        })
+     }
+```
+
+### ウィンドウの追加
 
 MapRequest イベントの処理では、新しいウィンドウをリストに追加し、レイアウトを再計算します。
 
-```rust
-fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
-    info!("Window mapped: win={}", event.window);
-    self.windows.push(Window::new(event.window));
+```diff rust
+ fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
+     info!("Window mapped: win={}", event.window);
++    self.windows.push(Window::new(event.window));
++
++    self.calculate_layout();
++    self.apply_layout()?;
++
+     self.conn.map_window(event.window)?.check()?;
 
-    self.calculate_layout();
-    self.apply_layout()?;
-
-    self.conn.map_window(event.window)?.check()?;
-
-    Ok(())
-}
-
-fn apply_layout(&self) -> Result<()> {
-    for window in &self.windows {
-        let geom = ConfigureWindowAux::default()
-            .x(window.x)
-            .y(window.y)
-            .width(window.width)
-            .height(window.height);
-        self.conn.configure_window(window.id, &geom)?.check()?;
-    }
-
-    Ok(())
-}
+     Ok(())
+ }
 ```
 
-`calculate_layout()` ですべてのウィンドウの位置とサイズを計算した後、`apply_layout()`
-内の `configure_window()` で配置を更新し、`map_window` で新しいウィンドウを表示します。
+`calculate_layout()` ですべてのウィンドウの位置とサイズを計算した後、`apply_layout()` で配置を更新し、`map_window()` で新しいウィンドウを表示します。
 
-### window の削除
+### ウィンドウの削除
 
 UnmapNotify イベントの処理では、ウィンドウをリストから削除し、レイアウトを再計算します。
 
-```rust
-fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
-    info!("Window unmapped: win={}", event.window);
-    self.windows.retain(|w| w.id != event.window);
+```diff rust
+ fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
+     info!("Window unmapped: win={}", event.window);
++    self.windows.retain(|w| w.id != event.window);
++
++    self.calculate_layout();
++    self.apply_layout()?;
 
-    self.calculate_layout();
-    self.apply_layout()?;
-
-    Ok(())
-}
+     Ok(())
+ }
 ```
 
 `calculate_layout()` で残りのウィンドウのレイアウトを計算した後、`apply_layout()` でウィンドウの配置を更新します。
 
-### レイアウトの計算
+### レイアウトの計算と適用
 
 `calculate_layout()` では、リスト内のすべてのウィンドウに対して位置とサイズを計算します。インデックス 0 のウィンドウを master として、それ以降を stack として配置します。
 
@@ -200,7 +208,24 @@ fn calculate_layout(&mut self) {
 }
 ```
 
-`MASTER_RATIO` 定数で master の幅を画面幅の半分に設定しています。ウィンドウが1つの場合は、master が全画面を使用します。stack ウィンドウは、個数に応じて縦方向に均等分割されます。
+ウィンドウが1つの場合は master が全画面を使用し、複数の場合は stack ウィンドウが右側で縦方向に均等分割されます。
+
+`apply_layout()` では、計算した位置とサイズを `configure_window()` で X Server に反映します。
+
+```rust
+fn apply_layout(&self) -> Result<()> {
+    for window in &self.windows {
+        let geom = ConfigureWindowAux::default()
+            .x(window.x)
+            .y(window.y)
+            .width(window.width)
+            .height(window.height);
+        self.conn.configure_window(window.id, &geom)?.check()?;
+    }
+
+    Ok(())
+}
+```
 
 ## この章のコード
 

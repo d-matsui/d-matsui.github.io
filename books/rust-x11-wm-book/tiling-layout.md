@@ -67,7 +67,7 @@ X Server からのイベントに応じてレイアウトを計算すること�
 `Window` 構造体に位置とサイズのフィールドを追加します。
 
 ```rust
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Window {
     id: u32,
     x: i32,
@@ -80,10 +80,7 @@ impl Window {
     fn new(id: u32) -> Self {
         Self {
             id,
-            x: 0,
-            y: 0,
-            width: 0,
-            height: 0,
+            ..Default::default()
         }
     }
 }
@@ -103,12 +100,10 @@ struct WindowManager {
 `new()` 関数では、`screen` から画面サイズを取得し、ウィンドウリストを初期化します。
 
 ```rust
-// screen info
 let screen = &conn.setup().roots[screen_num];
 let screen_width = u32::from(screen.width_in_pixels);
 let screen_height = u32::from(screen.height_in_pixels);
 
-// managed windows
 let windows = Vec::new();
 ```
 
@@ -118,35 +113,33 @@ MapRequest イベントの処理では、新しいウィンドウをリストに
 
 ```rust
 fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
-    info!("[MapRequest] win={}", event.window);
-    // add requested window to managed window list
+    info!("Window mapped: win={}", event.window);
     self.windows.push(Window::new(event.window));
 
-    // calculate tiling layout
     self.calculate_layout();
+    self.apply_layout()?;
 
-    // request to X server
+    self.conn.map_window(event.window)?.check()?;
+
+    Ok(())
+}
+
+fn apply_layout(&self) -> Result<()> {
     for window in &self.windows {
-        let change = ConfigureWindowAux::default()
+        let geom = ConfigureWindowAux::default()
             .x(window.x)
             .y(window.y)
             .width(window.width)
             .height(window.height);
-        self.conn.configure_window(window.id, &change)?.check()?;
+        self.conn.configure_window(window.id, &geom)?.check()?;
     }
-
-    let new_window = self
-        .windows
-        .last()
-        .expect("Window list should not be empty");
-
-    self.conn.map_window(new_window.id)?.check()?;
 
     Ok(())
 }
 ```
 
-`calculate_layout()` ですべてのウィンドウの位置とサイズを計算した後、`configure_window` で配置を更新し、`map_window` で新しいウィンドウを表示します。
+`calculate_layout()` ですべてのウィンドウの位置とサイズを計算した後、`apply_layout()`
+内の `configure_window()` で配置を更新し、`map_window` で新しいウィンドウを表示します。
 
 ### window の削除
 
@@ -154,39 +147,32 @@ UnmapNotify イベントの処理では、ウィンドウをリストから削�
 
 ```rust
 fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
-    info!("[UnmapNotify] window={}", event.window);
+    info!("Window unmapped: win={}", event.window);
     self.windows.retain(|w| w.id != event.window);
 
     self.calculate_layout();
-
-    for window in &self.windows {
-        let change = ConfigureWindowAux::default()
-            .x(window.x)
-            .y(window.y)
-            .width(window.width)
-            .height(window.height);
-        self.conn.configure_window(window.id, &change)?.check()?;
-    }
+    self.apply_layout()?;
 
     Ok(())
 }
 ```
 
-`calculate_layout()` で残りのウィンドウのレイアウトを計算した後、`configure_window` ですべてのウィンドウの配置を更新します。
+`calculate_layout()` で残りのウィンドウのレイアウトを計算した後、`apply_layout()` でウィンドウの配置を更新します。
 
 ### レイアウトの計算
 
 `calculate_layout()` では、リスト内のすべてのウィンドウに対して位置とサイズを計算します。インデックス 0 のウィンドウを master として、それ以降を stack として配置します。
 
 ```rust
+/// Calculates master-stack tiling layout.
+/// - First window: master (left, full height)
+/// - Other windows: stacked vertically (right side)
 fn calculate_layout(&mut self) {
-    const MASTER_RATIO: f32 = 0.5;
     let num_windows = self.windows.len() as u32;
     let master_width = (self.screen_width as f32 * MASTER_RATIO) as u32;
 
     for (idx, window) in self.windows.iter_mut().enumerate() {
         if idx == 0 {
-            // master
             window.x = 0;
             window.y = 0;
             window.width = if num_windows == 1 {
@@ -196,7 +182,6 @@ fn calculate_layout(&mut self) {
             };
             window.height = self.screen_height;
         } else {
-            // stack
             let stack_count = num_windows - 1;
             let stack_height = self.screen_height / stack_count;
             let stack_index = (idx - 1) as u32;
@@ -216,6 +201,227 @@ fn calculate_layout(&mut self) {
 ```
 
 `MASTER_RATIO` 定数で master の幅を画面幅の半分に設定しています。ウィンドウが1つの場合は、master が全画面を使用します。stack ウィンドウは、個数に応じて縦方向に均等分割されます。
+
+## この章のコード
+
+参考として、この章で実装した完全なコードを示します。
+
+:::details クリックして展開
+```rust
+use anyhow::Result;
+use tracing::{debug, error, info};
+
+use x11rb::connection::Connection;
+use x11rb::protocol::Event;
+use x11rb::protocol::xproto::{
+    ChangeWindowAttributesAux, ConfigureRequestEvent, ConfigureWindowAux, ConnectionExt, EventMask,
+    MapRequestEvent, UnmapNotifyEvent,
+};
+use x11rb::rust_connection::RustConnection;
+
+/// Ratio of master window width to screen width
+const MASTER_RATIO: f32 = 0.5;
+
+#[derive(Debug, Default)]
+struct Window {
+    id: u32,
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+}
+
+impl Window {
+    fn new(id: u32) -> Self {
+        Self {
+            id,
+            ..Default::default()
+        }
+    }
+}
+
+struct WindowManager {
+    conn: RustConnection,
+    screen_width: u32,
+    screen_height: u32,
+    windows: Vec<Window>,
+}
+
+impl WindowManager {
+    fn new(conn: RustConnection, screen_num: usize) -> Result<Self> {
+        let screen = &conn.setup().roots[screen_num];
+        let screen_width = u32::from(screen.width_in_pixels);
+        let screen_height = u32::from(screen.height_in_pixels);
+
+        let windows = Vec::new();
+
+        // set SUBSTRUCTURE_REDIRECT/NOTIFY mask to become window manager
+        let event_mask = EventMask::SUBSTRUCTURE_REDIRECT | EventMask::SUBSTRUCTURE_NOTIFY;
+        let attr = ChangeWindowAttributesAux::default().event_mask(event_mask);
+        conn.change_window_attributes(screen.root, &attr)?.check()?;
+        info!("Successfully became window manager");
+
+        Ok(Self {
+            conn,
+            screen_width,
+            screen_height,
+            windows,
+        })
+    }
+
+    fn run(&mut self) -> Result<()> {
+        loop {
+            self.conn.flush()?;
+            let event = self.conn.wait_for_event()?;
+
+            if let Err(e) = self.handle_event(&event) {
+                error!("Failed to handle event: {:?}", e);
+            }
+        }
+    }
+
+    fn handle_event(&mut self, event: &Event) -> Result<()> {
+        match event {
+            Event::MapRequest(e) => self.handle_map_request(e)?,
+            Event::ConfigureRequest(e) => self.handle_configure_request(e)?,
+            Event::UnmapNotify(e) => self.handle_unmap_notify(e)?,
+            _ => debug!("[Unhandled] {:?}", event),
+        }
+
+        Ok(())
+    }
+
+    fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
+        info!("Window mapped: win={}", event.window);
+        self.windows.push(Window::new(event.window));
+
+        self.calculate_layout();
+        self.apply_layout()?;
+
+        self.conn.map_window(event.window)?.check()?;
+
+        Ok(())
+    }
+
+    /// Handles window configuration requests from applications.
+    /// Currently passes through all requests. Tiling layout is reapplied on map/unmap.
+    fn handle_configure_request(&self, event: &ConfigureRequestEvent) -> Result<()> {
+        debug!(
+            "ConfigureRequest: win={}, size={}x{}",
+            event.window, event.width, event.height
+        );
+
+        let geom = ConfigureWindowAux::from_configure_request(event);
+        self.conn.configure_window(event.window, &geom)?.check()?;
+
+        Ok(())
+    }
+
+    fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
+        info!("Window unmapped: win={}", event.window);
+        self.windows.retain(|w| w.id != event.window);
+
+        self.calculate_layout();
+        self.apply_layout()?;
+
+        Ok(())
+    }
+
+    /// Calculates master-stack tiling layout.
+    /// - First window: master (left, full height)
+    /// - Other windows: stacked vertically (right side)
+    fn calculate_layout(&mut self) {
+        let num_windows = self.windows.len() as u32;
+        let master_width = (self.screen_width as f32 * MASTER_RATIO) as u32;
+
+        for (idx, window) in self.windows.iter_mut().enumerate() {
+            if idx == 0 {
+                window.x = 0;
+                window.y = 0;
+                window.width = if num_windows == 1 {
+                    self.screen_width
+                } else {
+                    master_width
+                };
+                window.height = self.screen_height;
+            } else {
+                let stack_count = num_windows - 1;
+                let stack_height = self.screen_height / stack_count;
+                let stack_index = (idx - 1) as u32;
+
+                window.x = master_width as i32;
+                window.y = (stack_height * stack_index) as i32;
+                window.width = self.screen_width - master_width;
+                window.height = stack_height;
+            }
+
+            debug!(
+                "layout win={}: {}x{} pos({},{})",
+                window.id, window.width, window.height, window.x, window.y
+            );
+        }
+    }
+
+    fn apply_layout(&self) -> Result<()> {
+        for window in &self.windows {
+            let geom = ConfigureWindowAux::default()
+                .x(window.x)
+                .y(window.y)
+                .width(window.width)
+                .height(window.height);
+            self.conn.configure_window(window.id, &geom)?.check()?;
+        }
+
+        Ok(())
+    }
+}
+
+fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
+
+    let (conn, screen_num) = x11rb::connect(None)?;
+    info!("Connected to X server: screen={}", screen_num);
+
+    let mut wm = WindowManager::new(conn, screen_num)?;
+    wm.run()?;
+
+    Ok(())
+}
+```
+:::
+
+テストスクリプト (`test.sh`) は下記の通りです。
+
+```bash
+#!/bin/bash
+
+# Building rwm
+cargo build 2>/dev/null || exit 1
+
+# Use nested X server (Xephyr)
+dpy_name=":10"
+Xephyr $dpy_name -screen 1280x720 2>/dev/null &
+XEPHYR_PID=$!
+sleep 1
+
+# Exec window manager
+DISPLAY=$dpy_name RUST_LOG=debug ./target/debug/rwm &
+RWM_PID=$!
+sleep 1
+
+# Open apps
+DISPLAY=$dpy_name xterm &
+sleep 1
+DISPLAY=$dpy_name xclock &
+sleep 1
+DISPLAY=$dpy_name xlogo &
+sleep 1
+DISPLAY=$dpy_name alacritty &
+sleep 1
+
+trap "kill $XEPHYR_PID $RWM_PID 2>/dev/null" EXIT
+wait $XEPHYR_PID
+```
 
 ## まとめ
 

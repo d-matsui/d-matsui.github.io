@@ -157,13 +157,13 @@ ConfigureRequest は、クライアントがウィンドウのサイズや位置
 
 ```rust
 fn handle_configure_request(&self, event: &ConfigureRequestEvent) -> Result<()> {
-    info!(
-        "[ConfigureRequest] win={} size={}x{}",
+    debug!(
+        "ConfigureRequest: win={}, size={}x{}",
         event.window, event.width, event.height
     );
 
-    let change = ConfigureWindowAux::from_configure_request(event);
-    self.conn.configure_window(event.window, &change)?.check()?;
+    let geom = ConfigureWindowAux::from_configure_request(event);
+    self.conn.configure_window(event.window, &geom)?.check()?;
 
     Ok(())
 }
@@ -177,7 +177,7 @@ MapRequest は、クライアントがウィンドウを表示しようとした
 
 ```rust
 fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
-    info!("[MapRequest] win={}", event.window);
+    info!("Window mapped: win={}", event.window);
     self.conn.map_window(event.window)?.check()?;
 
     Ok(())
@@ -192,7 +192,7 @@ UnmapNotify は、ウィンドウが非表示になったときに通知され�
 
 ```rust
 fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
-    info!("[UnmapNotify] window={}", event.window);
+    info!("Window unmapped: win={}", event.window);
 
     Ok(())
 }
@@ -215,56 +215,46 @@ fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
 期待される結果は以下の通りです。
 
 1. Xephyr が起動する
-2. rwm が起動し、以下のようなログが出力される
-   ```
-   INFO rwm: Connected to X server with screen 0
-   INFO rwm: Successfully became window manager
-   INFO rwm: [ConfigureRequest] win=4194316 size=10x17
-   INFO rwm: [ConfigureRequest] win=4194316 size=484x316
-   INFO rwm: [MapRequest] win=4194316
-   ```
+2. rwm が起動し、ログが出力される
 3. xterm が Xephyr 内に表示される
 
-ログに `[ConfigureRequest]` と `[MapRequest]` が出力されれば成功です。これらは、xterm によるウィンドウ操作関連のリクエストが Window Manager に正しくリダイレクトされ、処理されたことを示しています。
+ログに `ConfigureRequest` と `MapRequest` が出力されれば成功です。これらは、xterm によるウィンドウ操作関連のリクエストが Window Manager に正しくリダイレクトされ、処理されたことを示しています。
 
-xterm で `exit` と入力してウィンドウを閉じると、以下のログが出力されます。
+xterm で `exit` と入力してウィンドウを閉じると、以下のようなログが出力されます。
 
 ```
-INFO rwm: [UnmapNotify] window=4194316
+INFO rwm: Window unmapped: win=4194316
 ```
 
-## この章の完全なコード
+## この章のコード
 
 参考として、この章で実装した完全なコードを示します。
 
+:::details クリックして展開
 ```rust
 use anyhow::Result;
 use tracing::{debug, error, info};
-use x11rb::{
-    connection::Connection,
-    protocol::{
-        xproto::{
-            ChangeWindowAttributesAux, ConfigureRequestEvent, ConfigureWindowAux, ConnectionExt,
-            EventMask, MapRequestEvent, UnmapNotifyEvent,
-        },
-        Event,
-    },
-    rust_connection::RustConnection,
+
+use x11rb::connection::Connection;
+use x11rb::protocol::Event;
+use x11rb::protocol::xproto::{
+    ChangeWindowAttributesAux, ConfigureRequestEvent, ConfigureWindowAux, ConnectionExt, EventMask,
+    MapRequestEvent, UnmapNotifyEvent,
 };
+use x11rb::rust_connection::RustConnection;
 
 struct WindowManager {
     conn: RustConnection,
 }
+
 impl WindowManager {
     fn new(conn: RustConnection, screen_num: usize) -> Result<Self> {
-        // screen info
         let screen = &conn.setup().roots[screen_num];
 
-        // Set SUBSTRUCTURE_REDIRECT/NOTIFY mask to become window manager
+        // set SUBSTRUCTURE_REDIRECT/NOTIFY mask to become window manager
         let event_mask = EventMask::SUBSTRUCTURE_REDIRECT | EventMask::SUBSTRUCTURE_NOTIFY;
-        let change = ChangeWindowAttributesAux::default().event_mask(event_mask);
-        conn.change_window_attributes(screen.root, &change)?
-            .check()?;
+        let attr = ChangeWindowAttributesAux::default().event_mask(event_mask);
+        conn.change_window_attributes(screen.root, &attr)?.check()?;
         info!("Successfully became window manager");
 
         Ok(Self { conn })
@@ -283,8 +273,8 @@ impl WindowManager {
 
     fn handle_event(&mut self, event: &Event) -> Result<()> {
         match event {
-            Event::ConfigureRequest(e) => self.handle_configure_request(e)?,
             Event::MapRequest(e) => self.handle_map_request(e)?,
+            Event::ConfigureRequest(e) => self.handle_configure_request(e)?,
             Event::UnmapNotify(e) => self.handle_unmap_notify(e)?,
             _ => debug!("[Unhandled] {:?}", event),
         }
@@ -292,39 +282,39 @@ impl WindowManager {
         Ok(())
     }
 
-    fn handle_configure_request(&self, event: &ConfigureRequestEvent) -> Result<()> {
-        info!(
-            "[ConfigureRequest] win={} size={}x{}",
-            event.window, event.width, event.height
-        );
-
-        let change = ConfigureWindowAux::from_configure_request(event);
-        self.conn.configure_window(event.window, &change)?.check()?;
-
-        Ok(())
-    }
-
     fn handle_map_request(&mut self, event: &MapRequestEvent) -> Result<()> {
-        info!("[MapRequest] win={}", event.window);
+        info!("Window mapped: win={}", event.window);
         self.conn.map_window(event.window)?.check()?;
 
         Ok(())
     }
 
+    /// Handles window configuration requests from applications.
+    /// Currently passes through all requests. Tiling layout is reapplied on map/unmap.
+    fn handle_configure_request(&self, event: &ConfigureRequestEvent) -> Result<()> {
+        debug!(
+            "ConfigureRequest: win={}, size={}x{}",
+            event.window, event.width, event.height
+        );
+
+        let geom = ConfigureWindowAux::from_configure_request(event);
+        self.conn.configure_window(event.window, &geom)?.check()?;
+
+        Ok(())
+    }
+
     fn handle_unmap_notify(&mut self, event: &UnmapNotifyEvent) -> Result<()> {
-        info!("[UnmapNotify] window={}", event.window);
+        info!("Window unmapped: win={}", event.window);
 
         Ok(())
     }
 }
 
 fn main() -> Result<()> {
-    // Initialize tracing subscriber to enable logging
     tracing_subscriber::fmt::init();
 
-    // Connect to X server using $DISPLAY
     let (conn, screen_num) = x11rb::connect(None)?;
-    info!("Connected to X server with screen {:?}", screen_num);
+    info!("Connected to X server: screen={}", screen_num);
 
     let mut wm = WindowManager::new(conn, screen_num)?;
     wm.run()?;
@@ -332,6 +322,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 ```
+:::
 
 ## まとめ
 

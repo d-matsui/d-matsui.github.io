@@ -16,7 +16,7 @@ title: "キーイベントのハンドリング"
 
 これらの実装を通じて、X11 におけるキーイベントのハンドリング方法を学びます。
 
-<!-- TODO: ![ショートカットによるウィンドウ再配置のデモ](/images/XXX-demo.gif)-->
+![キーボードショートカットのデモ](/images/key-handling-demo.gif)
 
 ## キーボードショートカットの実現方法
 
@@ -38,11 +38,7 @@ KeyPress イベントには、押されたキーを識別するための情報�
 
 KeyCode は、押されたキーを表す数値です。一般的な QWERTY キーボードでは、j の位置にあるキーを押すと KeyCode 44 が返ってきます。
 
-KeySym は、押されたキーの意味を表す値です。例えば KeyCode 44 は KeySym `XK_j` にマッピングされます。
-
-本書では簡略化のため、KeySym への変換はせず、KeyCode を直接使用します。
-
-KeyPress イベントにおける state は、イベント発生直前にどの modifier (Shift, Ctrl, Alt など) が押されていたかを示すビットマスクです。本章では Alt キー (Mod1) を modifier として使用します。
+KeyPress イベントにおける state は、イベント発生直前にどの modifier (Shift, Ctrl, Alt など) が押されていたかを示すビットマスクです。この章では Alt キー (Mod1) を modifier として使用します。
 
 ## キーバインドの実装
 
@@ -56,7 +52,7 @@ enum Action {
 }
 ```
 
-キーバインドは、Modifier と KeyCode の組み合わせを `Action` に対応付けた `HashMap` で管理することにします。`WindowManager` 構造体にフィールドを追加します。
+キーバインドを、Modifier と KeyCode の組み合わせを `Action` に対応付けた `HashMap` で定義することにします。`WindowManager` 構造体にフィールドを追加します。
 
 ```diff rust
  struct WindowManager {
@@ -79,7 +75,11 @@ let keybindings = HashMap::from([
 ]);
 ```
 
-Window Manager の初期化後に、`grab_key()` を呼び出してキーバインドを X サーバに登録します。これにより、指定したキーの組み合わせが押されたときに KeyPress, KeyRelease イベントを受け取れるようになります。
+:::message
+ここで使用しているキーコード (44, 45, 58) は環境依存の値です。`xev` コマンドを使って、自分の環境でのキーコードを確認できます。
+:::
+
+Window Manager の初期化後、`grab_key()` を呼び出してキーバインドを X サーバに登録します。これにより、指定したキーの組み合わせが押されたときに KeyPress, KeyRelease イベントを受け取れるようになります。
 
 ```rust
 fn register_keybindings(&mut self) -> Result<()> {
@@ -98,7 +98,7 @@ fn register_keybindings(&mut self) -> Result<()> {
 }
 ```
 
-登録したキーバインドが押されると KeyPress イベントが発生します。`handle_event()` に KeyPress の処理を追加します。
+登録したキーバインドが押されると KeyPress イベントが発生します。このイベントをハンドルできるよう `handle_event()` に KeyPress の処理を追加します。
 
 ```diff rust
  fn handle_event(&mut self, event: &Event) -> Result<()> {
@@ -114,7 +114,7 @@ fn register_keybindings(&mut self) -> Result<()> {
  }
 ```
 
-`handle_key_press()` では、押されたキーに対応する `Action` を取得して実行します。
+`handle_key_press()` では、押されたキーに対応する `Action` を実行します。
 
 ```rust
 fn handle_key_press(&mut self, event: &KeyPressEvent) -> Result<()> {
@@ -140,10 +140,6 @@ main 関数では、`WindowManager::new()` の後に `register_keybindings()` �
  wm.run()?;
 ```
 
-:::message
-ここで使用しているキーコード (44, 45, 58) は環境依存の値です。`xev` コマンドを使って、自分の環境でのキーコードを確認できます。
-:::
-
 ## フォーカスの移動
 
 ### フォーカスの概念
@@ -166,7 +162,7 @@ X11 では、キーボード入力はフォーカスウィンドウ (とその�
  }
 ```
 
-フォーカスを設定する関数を実装します。
+`set_input_focus()` でウィンドウにフォーカスを設定する関数を実装します。
 
 ```rust
 fn focus_window(&mut self, window_id: u32) -> Result<()> {
@@ -187,7 +183,7 @@ fn focused_index(&self) -> Option<usize> {
 }
 ```
 
-フォーカスを次/前のウィンドウに移動する関数を実装します。ウィンドウリストの末尾に達したら先頭に戻り、先頭から前に移動したら末尾に戻るように循環させます。
+フォーカスを次/前のウィンドウに移動する関数を実装します。この章では、ウィンドウリストの末尾に達したら先頭に戻り、先頭から前に移動したら末尾に戻るように循環させる動作にします。
 
 ```rust
 fn focus_next(&mut self) -> Result<()> {
@@ -247,7 +243,7 @@ fn focus_prev(&mut self) -> Result<()> {
 
 ## フォーカス状態の表示
 
-フォーカスの切り替えだけでは、どのウィンドウがフォーカスされているか視覚的にわかりません。フォーカス中のウィンドウをボーダー色で区別できるようにします。
+フォーカスの切り替えだけでは、どのウィンドウがフォーカスされているか視覚的にわかりません。そこで、フォーカス中のウィンドウをボーダー色で区別できるようにします。
 
 ### ボーダーの概念
 
@@ -284,6 +280,8 @@ X11 のウィンドウにはボーダーを設定できます。ボーダーに�
 
 各ウィンドウの width と height から `BORDER_WIDTH * 2` を引いています。左右 (または上下) 両側にボーダーがあるため、2倍する必要があります。
 
+<!-- TODO: BOADER_WIDTH を図解する -->
+
 ### ボーダー色変更の実装
 
 ボーダーの太さと色を定数として定義します。
@@ -292,8 +290,8 @@ X11 のウィンドウにはボーダーを設定できます。ボーダーに�
  /// Ratio of master window width to screen width
  const MASTER_RATIO: f32 = 0.5;
 +const BORDER_WIDTH: u32 = 5;
-+const BORDER_COLOR_FOCUSED: u32 = 0xFF0000;   // 赤
-+const BORDER_COLOR_UNFOCUSED: u32 = 0x000000; // 黒
++const BORDER_COLOR_FOCUSED: u32 = 0xFF0000;   // red
++const BORDER_COLOR_UNFOCUSED: u32 = 0x000000; // black
 ```
 
 `focus_window()` の先頭に、ボーダー色を更新する処理を追加します。

@@ -9,5 +9,5 @@ chapters:
   - setup
   - simple-wm
   - tiling-layout
-  # - key-handling
+  - key-handling
   # - next-steps

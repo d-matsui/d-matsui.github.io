@@ -3,7 +3,7 @@ title: "Shaka Player で Media over QUIC を動かす"
 emoji: "🎬"
 type: "tech"
 topics: ["quic", "webtransport", "moq", "streaming", "shaka"]
-published: false
+published: true
 ---
 
 ## 概要

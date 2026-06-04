@@ -15,15 +15,25 @@ An X11 tiling window manager written in Rust.
 
 [GitHub](https://github.com/d-matsui/rustile)
 
-### kokolog
+### moq-mini
 
-A mobile app for practicing Cognitive Behavioral Therapy's 7-column method.
+A minimal MOQT (Media over QUIC Transport) implementation in Rust.
 
-- Quick memo and 7-column CBT forms
-- Mood tracking and visualization
-- React Native / TypeScript
+- Publisher → Relay → Subscriber live streaming pipeline
+- Supports both raw QUIC and WebTransport (browser client)
+- Rust / TypeScript
 
-[GitHub](https://github.com/d-matsui/kokolog)
+[GitHub](https://github.com/d-matsui/moq-mini)
+
+### emacs-manim
+
+An Emacs major mode for editing and rendering Manim animation scripts.
+
+- Async rendering with PNG/GIF preview in a side window
+- Auto-detects the Scene class at point
+- Emacs Lisp
+
+[GitHub](https://github.com/d-matsui/emacs-manim)
 
 ### md2taiga
 

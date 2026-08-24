@@ -6,7 +6,7 @@ slug: x11-distinguish-left-right-alt-keys
 featured: true
 draft: false
 tags:
-  - x11
+  - X11
   - linux
   - keyboard
   - rust

@@ -1,4 +1,5 @@
 import { defineConfig, envField } from "astro/config";
+import { unified } from "@astrojs/markdown-remark";
 import tailwindcss from "@tailwindcss/vite";
 import sitemap from "@astrojs/sitemap";
 import partytown from "@astrojs/partytown";
@@ -27,25 +28,30 @@ export default defineConfig({
     }),
   ],
   markdown: {
-    remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
-    rehypePlugins: [
-      [
-        rehypeMermaid,
-        {
-          mermaidConfig: {
-            theme: "base",
-            themeVariables: {
-              primaryColor: "#fff",
-              primaryTextColor: "#000",
-              primaryBorderColor: "#000",
-              lineColor: "#000",
-              secondaryColor: "#fff",
-              tertiaryColor: "#fff",
+    processor: unified({
+      remarkPlugins: [
+        remarkToc,
+        [remarkCollapse, { test: "Table of contents" }],
+      ],
+      rehypePlugins: [
+        [
+          rehypeMermaid,
+          {
+            mermaidConfig: {
+              theme: "base",
+              themeVariables: {
+                primaryColor: "#fff",
+                primaryTextColor: "#000",
+                primaryBorderColor: "#000",
+                lineColor: "#000",
+                secondaryColor: "#fff",
+                tertiaryColor: "#fff",
+              },
             },
           },
-        },
+        ],
       ],
-    ],
+    }),
     syntaxHighlight: {
       type: "shiki",
       excludeLangs: ["mermaid"],
@@ -64,10 +70,6 @@ export default defineConfig({
     },
   },
   vite: {
-    // eslint-disable-next-line
-    // @ts-ignore
-    // This will be fixed in Astro 6 with Vite 7 support
-    // See: https://github.com/withastro/astro/issues/14030
     plugins: [tailwindcss()],
     optimizeDeps: {
       exclude: ["@resvg/resvg-js"],
@@ -85,8 +87,5 @@ export default defineConfig({
         optional: true,
       }),
     },
-  },
-  experimental: {
-    preserveScriptOrder: true,
   },
 });

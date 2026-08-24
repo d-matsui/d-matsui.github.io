@@ -30,7 +30,7 @@
     "rehype-mermaid": "^3.0.0",
     "remark-collapse": "^0.1.2",
     "remark-toc": "^9.0.0",
-    "satori": "^0.15.2",
+    "satori": "^0.33.3",
     "sharp": "^0.35.3",
     "tailwindcss": "^4.1.11"
   },
@@ -51,6 +51,6 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.67.0",
-    "zenn-cli": "^0.2.10"
+    "zenn-cli": "^0.5.2"
   }
 }
